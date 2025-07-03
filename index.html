@@ -3,314 +3,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Options Trading Discipline & ROI</title>
+    <title>Options Trading Discipline App</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Light blue-gray background */
-            color: #334155; /* Darker text color */
+            background-color: #e0f2fe; /* Lighter blue background */
+            color: #1a202c; /* Darker text color for better contrast */
+            background-image: linear-gradient(to bottom right, #e0f2fe, #f0f9ff); /* Subtle gradient */
+            min-height: 100vh; /* Ensure full viewport height */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Align content to top */
+            padding: 2rem 1rem; /* Responsive padding */
+        }
+        .container {
+            max-width: 80rem; /* Increased max-width for a broader app feel */
+            width: 100%;
+            margin: 0 auto;
         }
         .card {
             background-color: #ffffff;
-            border-radius: 1rem; /* Rounded corners */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            border-radius: 1.75rem; /* Even more rounded corners */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 10px 10px -5px rgba(0, 0, 0, 0.08); /* Stronger, softer shadow */
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #e2e8f0; /* Subtle light border */
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3), 0 15px 15px -8px rgba(0, 0, 0, 0.1);
         }
         .btn-primary {
             background-color: #4f46e5; /* Indigo */
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem; /* More rounded */
-            transition: background-color 0.3s ease;
+            padding: 1rem 2rem;
+            border-radius: 1rem; /* More rounded */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
         }
         .btn-primary:hover {
             background-color: #4338ca; /* Darker indigo on hover */
+            transform: translateY(-3px); /* Slight lift effect */
+            box-shadow: 0 8px 20px rgba(67, 56, 202, 0.4);
         }
         input[type="number"], input[type="text"], textarea {
-            border: 1px solid #cbd5e1; /* Slate-300 */
-            border-radius: 0.5rem;
-            padding: 0.75rem 1rem;
+            border: 1px solid #94a3b8; /* Slate-400 */
+            border-radius: 0.75rem; /* More rounded */
+            padding: 1rem 1.25rem;
             width: 100%;
             box-sizing: border-box;
-            background-color: #f8fafc; /* Lightest blue-gray */
+            background-color: #fefeff; /* Slightly off-white */
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input[type="number"]:focus, input[type="text"]:focus, textarea:focus {
+            border-color: #6366f1; /* Indigo on focus */
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3); /* Stronger focus ring */
         }
         .section-title {
-            color: #1e293b; /* Slate-900 */
+            color: #1e3a8a; /* Darker blue for titles */
+            font-weight: 800; /* Extra bold */
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem; /* Larger title */
+            text-align: center;
+            line-height: 1.2;
+        }
+        .sub-section-title {
+            color: #3b82f6; /* Blue for sub-titles */
             font-weight: 700;
-            margin-bottom: 1rem;
+            font-size: 2rem;
+            margin-bottom: 1.25rem;
+            text-align: center;
         }
         .list-item {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: #f0f9ff; /* Very light blue background for list items */
+            border: 1px solid #e0f2fe;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .list-item:hover {
+            background-color: #e0f7ff; /* Slightly darker light blue on hover */
+            border-color: #bfdbfe;
         }
         .list-item svg {
             flex-shrink: 0;
-            margin-right: 0.5rem;
-            color: #10b981; /* Emerald-500 */
+            margin-right: 1rem;
+            color: #059669; /* Darker emerald green */
+            width: 1.75rem; /* Even larger icon */
+            height: 1.75rem;
+        }
+        .form-checkbox {
+            border-radius: 0.375rem; /* Slightly rounded checkbox */
+            border-color: #64748b; /* Slate-600 */
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+        }
+        .form-checkbox:checked {
+            background-color: #4f46e5; /* Indigo when checked */
+            border-color: #4f46e5;
+        }
+        .roi-result {
+            border-width: 3px; /* Even thicker border */
+            border-color: #a78bfa; /* Light purple border */
+            background-color: #f3e8ff; /* Very light purple background */
+            font-size: 1.75rem; /* Larger font */
+            font-weight: 800;
+            padding: 1.5rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .roi-result.positive {
+            background-color: #d1fae5; /* Light green */
+            border-color: #34d399; /* Green */
+            color: #065f46; /* Dark green text */
+        }
+        .roi-result.negative {
+            background-color: #fee2e2; /* Light red */
+            border-color: #ef4444; /* Red */
+            color: #991b1b; /* Dark red text */
+        }
+        .roi-result.warning {
+            background-color: #fffbeb; /* Light yellow */
+            border-color: #fbbf24; /* Yellow */
+            color: #b45309; /* Dark yellow text */
+        }
+
+        /* Table styling */
+        .trading-table {
+            width: 100%;
+            border-collapse: separate; /* Allows border-radius on cells */
+            border-spacing: 0;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 1rem;
+            overflow: hidden; /* Ensures rounded corners apply */
+        }
+        .trading-table th, .trading-table td {
+            padding: 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .trading-table th {
+            background-color: #3b82f6; /* Blue header */
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+        }
+        .trading-table td {
+            background-color: #ffffff;
+            color: #334155;
+        }
+        .trading-table tbody tr:nth-child(odd) td {
+            background-color: #f8fafc; /* Zebra striping */
+        }
+        .trading-table tbody tr:hover td {
+            background-color: #e0f2fe; /* Hover effect on rows */
+        }
+        .trading-table th:first-child { border-top-left-radius: 1rem; }
+        .trading-table th:last-child { border-top-right-radius: 1rem; }
+        .trading-table tr:last-child td:first-child { border-bottom-left-radius: 1rem; }
+        .trading-table tr:last-child td:last-child { border-bottom-right-radius: 1rem; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2rem;
+            }
+            .sub-section-title {
+                font-size: 1.5rem;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+            .trading-table th, .trading-table td {
+                padding: 0.75rem;
+            }
         }
     </style>
 </head>
-<body class="p-4 sm:p-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-4xl font-bold text-center mb-8 text-indigo-700">Your Trading Edge</h1>
+<body>
+    <div class="container">
+        <h1 class="text-5xl font-extrabold text-center mb-12 text-indigo-700 leading-tight">
+            Your Trading Edge: <span class="block text-indigo-500">Discipline & Growth</span>
+        </h1>
 
         <!-- Welcome Section -->
         <div class="card">
-            <h2 class="text-2xl section-title">Welcome, Trader!</h2>
-            <p class="text-gray-700">This page is designed to help you build discipline, refine your strategies, and improve your overall trading performance in the Indian stock market. Let's turn those 90% winning first trades into consistent profits!</p>
+            <h2 class="section-title">Welcome, Trader!</h2>
+            <p class="text-gray-700 text-lg text-center leading-relaxed">This application is your personalized guide to mastering options trading in the Indian stock market. It provides a concise, actionable checklist for your daily trading routine to foster discipline and consistent growth.</p>
         </div>
 
-        <!-- First Candle Strategy Improvement -->
+        <!-- Trading Checklist -->
         <div class="card">
-            <h2 class="text-2xl section-title">First Candle Strategy Refinement</h2>
-            <p class="mb-4 text-gray-700">Your 90% success rate on the first trade is excellent! Here are some ways to potentially enhance it and ensure you capitalize on that edge:</p>
-            <ul class="space-y-3">
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Contextual Confirmation:</strong> Before the first minute candle forms, check the broader market trend (daily/hourly charts). Is the index in an uptrend, downtrend, or range? This can add conviction to your first trade.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Volume Confirmation on Retracement:</strong> When waiting for the retracement to the 50% level, observe the volume during this pullback. A low-volume retracement suggests the original trend is more likely to resume. A high-volume retracement might indicate a stronger reversal.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Defined Stop-Loss:</strong> For your first trade, consider placing your stop-loss just beyond the high/low of the first minute candle (depending on direction). This gives the trade room to breathe but limits your risk if the setup fails.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Target Profit Zones:</strong> Instead of just holding, identify potential target zones (e.g., previous day's high/low, pivot points, significant moving averages) where you would consider taking partial or full profits. This helps with your "fail to hold" issue.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Option Premium Behavior:</strong> You're already looking at option premiums and volume. Also, consider the "implied volatility" (IV) of the options. A high IV might mean options are expensive, and a sharp drop in IV after entry can erode profits even if the underlying moves in your favor (IV crush).
-                    </div>
-                </li>
-            </ul>
-        </div>
+            <h2 class="section-title">Your Daily Trading Checklist</h2>
+            <p class="mb-4 text-gray-700 text-lg text-center leading-relaxed">Follow these steps diligently to maximize your edge and manage your capital effectively.</p>
 
-        <!-- Trading Rules & Discipline -->
-        <div class="card">
-            <h2 class="text-2xl section-title">Essential Trading Rules & Discipline</h2>
-            <p class="mb-4 text-gray-700">These rules are crucial for managing your capital and emotions, especially with a 10k capital base.</p>
-            <ul class="space-y-3">
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">The "One-and-Done" Rule (for your first trade):</strong> Since your first trade has a high success rate, consider making it your *only* trade for the day if it hits your profit target. If it hits your stop-loss, you can consider one more trade based on a well-defined setup, or simply call it a day. This directly combats overtrading.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Daily Loss Limit (Stop-Loss for the Day):</strong> Define a maximum amount you are willing to lose in a single day. For 10k capital, perhaps ₹500-₹1000 (5-10%). Once this limit is hit, *stop trading immediately* for the day, no matter what.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Daily Profit Target:</strong> Set a realistic profit target for the day (e.g., ₹1000-₹1500 or 10-15% of capital). Once you hit this, *stop trading*. This directly addresses turning profits into losses.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Pre-Define Entry, Target, Stop-Loss:</strong> Before entering any trade, know exactly where you will enter, where you will take profits, and where you will exit if the trade goes against you. Stick to this plan.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Position Sizing:</strong> With 10k, avoid putting more than 10-20% of your capital into a single trade, especially with options. This means ₹1000-₹2000 per trade. This limits potential losses and allows for more trades if needed (though aim for fewer, high-quality trades).
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Journal Everything:</strong> Keep a detailed trading journal. Record entry/exit points, reasons for trade, emotions, and outcome. Review it regularly. This is how you learn and improve.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">No Revenge Trading:</strong> If you take a loss, do not immediately jump into another trade to "make back" the money. Step away, review, and come back with a clear mind.
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Trading Checklists -->
-        <div class="card">
-            <h2 class="text-2xl section-title">Your Trading Checklists</h2>
-            <p class="mb-4 text-gray-700">Use these checklists to ensure you're following your rules and strategy consistently.</p>
-
-            <div class="mb-6">
-                <h3 class="text-xl font-semibold mb-2 text-gray-800">Pre-Trade Checklist</h3>
-                <ul class="space-y-2">
+            <div class="mb-8">
+                <h3 class="sub-section-title text-gray-800">Pre-Market Preparation</h3>
+                <ul class="space-y-2" id="preMarketChecklist">
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Market trend (Daily/Hourly) identified?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="reviewCharts">
+                        <span class="ml-2 text-gray-700">Review daily/15-min charts for overall trend, support/resistance.</span>
                     </li>
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">First minute candle formed and 50% level marked?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="calculatePivots">
+                        <span class="ml-2 text-gray-700">Calculate daily pivot points.</span>
                     </li>
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Retracement to 50% level observed with appropriate volume?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="defineMaxLoss">
+                        <span class="ml-2 text-gray-700">Define max daily loss (e.g., ₹500 for 10k capital).</span>
                     </li>
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Option premium price and volume checked for entry?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="defineMaxProfit">
+                        <span class="ml-2 text-gray-700">Define max daily profit target (e.g., ₹500-₹1000 for 10k capital).</span>
                     </li>
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Entry point, Stop-Loss, and Target Profit defined?</span>
-                    </li>
-                    <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Position size calculated (max 10-20% of capital)?</span>
-                    </li>
-                    <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Daily loss limit not yet hit?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="commitToTrades">
+                        <span class="ml-2 text-gray-700">Commit to only 1-2 trades today.</span>
                     </li>
                 </ul>
             </div>
 
-            <div class="mb-6">
-                <h3 class="text-xl font-semibold mb-2 text-gray-800">In-Trade Checklist</h3>
-                <ul class="space-y-2">
+            <div class="mb-8">
+                <h3 class="sub-section-title text-gray-800">Market Open (First Trade)</h3>
+                <ul class="space-y-2" id="marketOpenChecklist">
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Sticking to the pre-defined Stop-Loss?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="markFirstCandle">
+                        <span class="ml-2 text-gray-700">Mark first minute candle high/low and 50% retracement.</span>
                     </li>
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Monitoring price action towards target?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="waitForRetracement">
+                        <span class="ml-2 text-gray-700">Wait for retracement and confirmation candle.</span>
                     </li>
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Avoiding emotional decisions (fear/greed)?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="checkOptionVolume">
+                        <span class="ml-2 text-gray-700">Check option premium volume (and IV if possible).</span>
                     </li>
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Considering partial profit booking at initial target?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="defineTradeParams">
+                        <span class="ml-2 text-gray-700">Before Entry: Define precise entry, profit target, and stop loss for this specific trade (max ₹100-₹200 loss).</span>
+                    </li>
+                    <li class="list-item">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="enterTrade">
+                        <span class="ml-2 text-gray-700">Enter the trade (1 lot only, or appropriate small size).</span>
+                    </li>
+                    <li class="list-item">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="placeSLTarget">
+                        <span class="ml-2 text-gray-700">Place SL and Target immediately.</span>
+                    </li>
+                    <li class="list-item">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="setAndForget">
+                        <span class="ml-2 text-gray-700">Practice "Set it and Forget it" and trailing SL if in profit.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="sub-section-title text-gray-800">After First Trade</h3>
+                <ul class="space-y-2" id="afterFirstTradeChecklist">
+                    <li class="list-item">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="ifProfitClose">
+                        <span class="ml-2 text-gray-700">If profitable and hits daily target: CLOSE TERMINAL. Enjoy your day.</span>
+                    </li>
+                    <li class="list-item">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="ifProfitReevaluate">
+                        <span class="ml-2 text-gray-700">If profitable but not daily target: Re-evaluate for a second trade based purely on price action, sticking to your risk rules.</span>
+                    </li>
+                    <li class="list-item">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="ifLossReview">
+                        <span class="ml-2 text-gray-700">If a loss: Review why. Do not take a revenge trade. If daily loss limit is hit, CLOSE TERMINAL.</span>
                     </li>
                 </ul>
             </div>
 
             <div>
-                <h3 class="text-xl font-semibold mb-2 text-gray-800">Post-Trade Checklist</h3>
-                <ul class="space-y-2">
+                <h3 class="sub-section-title text-gray-800">End of Day Review</h3>
+                <ul class="space-y-2" id="endOfDayChecklist">
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Trade details (entry, exit, P&L, emotions) recorded in journal?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="updateJournal">
+                        <span class="ml-2 text-gray-700">Update your trading journal meticulously (entry/exit, P&L, emotions, lessons).</span>
                     </li>
                     <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">If profit target hit, stopping trading for the day?</span>
-                    </li>
-                    <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">If daily loss limit hit, stopping trading for the day?</span>
-                    </li>
-                    <li class="list-item">
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1">
-                        <span class="ml-2 text-gray-700">Reviewed the trade for lessons learned?</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-indigo-600 rounded-md mt-1" data-item="analyzePerformance">
+                        <span class="ml-2 text-gray-700">Analyze your performance and emotions.</span>
                     </li>
                 </ul>
             </div>
         </div>
 
-        <!-- Creative Helpful Things -->
-        <div class="card">
-            <h2 class="text-2xl section-title">Creative & Helpful Things for Your Trading Journey</h2>
-            <p class="mb-4 text-gray-700">Beyond rules, these practices can significantly enhance your mental game and consistency.</p>
-            <ul class="space-y-3">
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Visualize Success:</strong> Before the market opens, spend 5 minutes visualizing yourself executing your plan perfectly, sticking to your stop-loss, taking profits, and walking away from the screen when your daily limits are hit.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Mindful Breathing:</strong> If you feel emotions rising during a trade (fear, greed, frustration), take 3-5 deep breaths. Inhale slowly, hold, exhale slowly. This can help calm your nervous system and bring you back to a rational state.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Small Wins Celebration:</strong> When you hit your daily profit target, acknowledge it! Even if it's just a small amount, celebrate the discipline. This reinforces positive behavior.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">"Walk Away" Ritual:</strong> After hitting your daily limit (profit or loss), physically step away from your trading desk. Go for a walk, do something else you enjoy. This creates a clear boundary.
-                    </div>
-                </li>
-                <li class="list-item">
-                    <svg class="w-5 h-5 mt-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    <div>
-                        <strong class="text-gray-800">Review Your Best Trades:</strong> Regularly look back at your most successful trades. What did you do right? How did you feel? Reinforce those positive patterns.
-                    </div>
-                </li>
-            </ul>
-        </div>
-
         <!-- ROI Calculator -->
         <div class="card">
-            <h2 class="text-2xl section-title">Return on Investment (ROI) Calculator</h2>
-            <p class="mb-4 text-gray-700">Track your performance to understand your growth. Enter your capital details below.</p>
+            <h2 class="section-title">Return on Investment (ROI) Calculator</h2>
+            <p class="mb-4 text-gray-700 text-lg text-center leading-relaxed">Track your performance to understand your growth. Enter your capital details below.</p>
             <div class="space-y-4">
                 <div>
-                    <label for="initialCapital" class="block text-sm font-medium text-gray-700 mb-1">Initial Capital (₹)</label>
-                    <input type="number" id="initialCapital" placeholder="e.g., 10000" class="focus:ring-indigo-500 focus:border-indigo-500">
+                    <label for="initialCapital" class="block text-base font-medium text-gray-700 mb-1">Initial Capital (₹)</label>
+                    <input
+                        type="number"
+                        id="initialCapital"
+                        placeholder="e.g., 10000"
+                        class="focus:ring-indigo-500 focus:border-indigo-500"
+                    />
                 </div>
                 <div>
-                    <label for="finalCapital" class="block text-sm font-medium text-gray-700 mb-1">Final Capital (₹)</label>
-                    <input type="number" id="finalCapital" placeholder="e.g., 11500" class="focus:ring-indigo-500 focus:border-indigo-500">
+                    <label for="finalCapital" class="block text-base font-medium text-gray-700 mb-1">Final Capital (₹)</label>
+                    <input
+                        type="number"
+                        id="finalCapital"
+                        placeholder="e.g., 11500"
+                        class="focus:ring-indigo-500 focus:border-indigo-500"
+                    />
                 </div>
                 <button onclick="calculateROI()" class="btn-primary w-full">Calculate ROI</button>
-                <div id="roiResult" class="mt-4 p-3 border border-gray-300 rounded-lg text-center text-lg font-semibold bg-gray-50 text-gray-800 hidden">
+                <div id="roiResult" class="mt-6 p-4 border rounded-xl text-center roi-result hidden">
                     <!-- ROI result will be displayed here -->
                 </div>
             </div>
         </div>
 
-        <div class="text-center mt-8 text-gray-600 text-sm">
+        <div class="text-center mt-12 text-gray-500 text-sm">
             <p>&copy; 2025 Your Trading Journey. All rights reserved.</p>
         </div>
     </div>
 
     <script>
+        // Function to calculate ROI
         function calculateROI() {
-            const initialCapital = parseFloat(document.getElementById('initialCapital').value);
-            const finalCapital = parseFloat(document.getElementById('finalCapital').value);
+            const initialCapitalInput = document.getElementById('initialCapital');
+            const finalCapitalInput = document.getElementById('finalCapital');
             const roiResultDiv = document.getElementById('roiResult');
+
+            const initialCapital = parseFloat(initialCapitalInput.value);
+            const finalCapital = parseFloat(finalCapitalInput.value);
+
+            // Clear previous classes
+            roiResultDiv.classList.remove('positive', 'negative', 'warning');
 
             if (isNaN(initialCapital) || isNaN(finalCapital) || initialCapital <= 0) {
                 roiResultDiv.textContent = 'Please enter valid positive numbers for capital.';
                 roiResultDiv.classList.remove('hidden');
-                roiResultDiv.classList.remove('bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
-                roiResultDiv.classList.add('bg-yellow-100', 'text-yellow-800');
+                roiResultDiv.classList.add('warning');
                 return;
             }
 
@@ -318,16 +370,53 @@
 
             roiResultDiv.textContent = `Your ROI: ${roi.toFixed(2)}%`;
             roiResultDiv.classList.remove('hidden');
-            roiResultDiv.classList.remove('bg-yellow-100', 'text-yellow-800');
 
             if (roi >= 0) {
-                roiResultDiv.classList.remove('bg-red-100', 'text-red-800');
-                roiResultDiv.classList.add('bg-green-100', 'text-green-800');
+                roiResultDiv.classList.add('positive');
             } else {
-                roiResultDiv.classList.remove('bg-green-100', 'text-green-800');
-                roiResultDiv.classList.add('bg-red-100', 'text-red-800');
+                roiResultDiv.classList.add('negative');
             }
         }
+
+        // --- Checklist Functionality (Vanilla JS) ---
+        // Function to load checklist state from localStorage
+        function loadChecklistState() {
+            const checklistElements = document.querySelectorAll('.form-checkbox');
+            checklistElements.forEach(checkbox => {
+                const itemId = checkbox.dataset.item;
+                const checklistType = checkbox.closest('ul').id; // e.g., 'preMarketChecklist'
+
+                if (itemId && checklistType) {
+                    const storedState = localStorage.getItem(`${checklistType}-${itemId}`);
+                    if (storedState === 'true') {
+                        checkbox.checked = true;
+                    } else {
+                        checkbox.checked = false; // Ensure it's false if not explicitly true
+                    }
+                }
+            });
+        }
+
+        // Function to save checklist state to localStorage
+        function saveChecklistState(event) {
+            const checkbox = event.target;
+            const itemId = checkbox.dataset.item;
+            const checklistType = checkbox.closest('ul').id; // e.g., 'preMarketChecklist'
+
+            if (itemId && checklistType) {
+                localStorage.setItem(`${checklistType}-${itemId}`, checkbox.checked);
+            }
+        }
+
+        // Add event listeners to all checkboxes
+        document.addEventListener('DOMContentLoaded', () => {
+            loadChecklistState(); // Load state on page load
+
+            const checklistElements = document.querySelectorAll('.form-checkbox');
+            checklistElements.forEach(checkbox => {
+                checkbox.addEventListener('change', saveChecklistState);
+            });
+        });
     </script>
 </body>
 </html>
