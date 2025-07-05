@@ -7,10 +7,69 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <style>
+        /* Base styles */
         body {
             font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        /* Light Theme (default) */
+        body {
+            background-color: #f3f4f6; /* gray-100 */
+            color: #374151; /* gray-800 */
+        }
+        .bg-white { background-color: #ffffff; }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .text-gray-900 { color: #111827; }
+        .text-gray-800 { color: #374151; }
+        .text-gray-700 { color: #4b5563; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-500 { color: #6b7280; }
+        .border { border-color: #d1d5db; } /* gray-300 */
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
+        .hover\:bg-gray-300:hover { background-color: #d1d5db; }
+        .text-blue-600 { color: #2563eb; }
+        .text-blue-900 { color: #1e3a8a; }
+        .bg-red-500 { background-color: #ef4444; }
+        .hover\:bg-red-600:hover { background-color: #dc2626; }
+        .text-green-600 { color: #16a34a; }
+        .text-red-600 { color: #dc2626; }
+
+
+        /* Dark Theme */
+        html.dark body {
+            background-color: #1a202c; /* Darker background */
+            color: #e2e8f0; /* Light text */
+        }
+        html.dark .bg-white { background-color: #2d3748; } /* Darker cards/elements */
+        html.dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2); }
+        html.dark .text-gray-900 { color: #f7fafc; }
+        html.dark .text-gray-800 { color: #e2e8f0; }
+        html.dark .text-gray-700 { color: #cbd5e0; }
+        html.dark .text-gray-600 { color: #a0aec0; }
+        html.dark .text-gray-500 { color: #718096; }
+        html.dark .border { border-color: #4a5568; } /* Darker borders */
+        html.dark input, html.dark select, html.dark textarea {
+            background-color: #4a5568;
+            color: #e2e8f0;
+            border-color: #6b7280;
+        }
+        html.dark input:focus, html.dark select:focus, html.dark textarea:focus {
+            border-color: #63b3ed; /* blue-300 */
+            box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.5);
+        }
+        html.dark .bg-gray-50 { background-color: #2d3748; } /* Table header */
+        html.dark .bg-gray-100 { background-color: #4a5568; } /* Watchlist item background */
+        html.dark .hover\:bg-gray-50:hover { background-color: #4a5568; } /* Table row hover */
+        html.dark .hover\:bg-gray-300:hover { background-color: #6b7280; } /* Cancel button hover */
+        html.dark .modal { background-color: #2d3748; }
+
+        /* General Modal Styles (retained from previous version) */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -28,6 +87,9 @@
             left: 50%;
             transform: translate(-50%, -50%);
             z-index: 50;
+            max-height: 90vh; /* Ensure modal is not taller than viewport */
+            overflow-y: auto; /* Enable scrolling within the modal */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
         .form-section-grid {
             display: grid;
@@ -54,6 +116,10 @@
                     <a href="#watchlist" class="nav-link text-gray-600 hover:text-blue-600">Watchlist</a>
                 </div>
                 <div class="flex items-center space-x-4">
+                     <button id="theme-toggle" class="p-2 rounded-full text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 transition">
+                        <i class="fas fa-moon hidden dark:block"></i>
+                        <i class="fas fa-sun dark:hidden"></i>
+                    </button>
                      <div id="auth-container">
                         <!-- Auth buttons will be injected here -->
                     </div>
@@ -67,15 +133,15 @@
             <!-- Auth Section -->
             <div id="auth-section">
                 <div class="max-w-md mx-auto mt-10 bg-white p-8 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-bold text-center mb-6">Login to Your Journal</h2>
+                    <h2 class="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Login to Your Journal</h2>
                     <form id="login-form">
                         <div class="mb-4">
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                            <input type="email" id="email" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                            <input type="email" id="email" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required>
                         </div>
                         <div class="mb-6">
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            <input type="password" id="password" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                            <input type="password" id="password" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required>
                         </div>
                         <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300">Login</button>
                     </form>
@@ -87,27 +153,106 @@
             <div id="app-content" class="hidden">
                 <!-- Dashboard Section -->
                 <section id="dashboard" class="mb-8">
-                    <h2 class="text-2xl font-bold mb-4">Performance Dashboard</h2>
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Performance Dashboard</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Total Trades</h3><p id="total-trades" class="text-3xl font-bold mt-2">0</p></div>
-                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Win Rate</h3><p id="win-rate" class="text-3xl font-bold mt-2">0%</p></div>
-                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Gross P/L</h3><p id="gross-pl" class="text-3xl font-bold mt-2 text-gray-800">₹0.00</p></div>
-                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Net P/L (After Charges)</h3><p id="net-pl" class="text-3xl font-bold mt-2 text-gray-800">₹0.00</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800"><h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Trades</h3><p id="total-trades" class="text-3xl font-bold mt-2 text-gray-800 dark:text-gray-200">0</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800"><h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Win Rate</h3><p id="win-rate" class="text-3xl font-bold mt-2 text-gray-800 dark:text-gray-200">0%</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800"><h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Gross P/L</h3><p id="gross-pl" class="text-3xl font-bold mt-2 text-gray-800 dark:text-gray-200">₹0.00</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800"><h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Net P/L (After Charges)</h3><p id="net-pl" class="text-3xl font-bold mt-2 text-gray-800 dark:text-gray-200">₹0.00</p></div>
+                    </div>
+                    <!-- Export Buttons -->
+                    <div class="mt-6 flex flex-col sm:flex-row gap-4">
+                        <button id="export-pdf-btn" class="bg-purple-600 text-white px-6 py-3 rounded-lg shadow hover:bg-purple-700 transition duration-300 flex items-center justify-center space-x-2">
+                            <i class="fas fa-file-pdf"></i>
+                            <span>Download PDF</span>
+                        </button>
+                        <button id="export-excel-btn" class="bg-green-600 text-white px-6 py-3 rounded-lg shadow hover:bg-green-700 transition duration-300 flex items-center justify-center space-x-2">
+                            <i class="fas fa-file-excel"></i>
+                            <span>Download Excel</span>
+                        </button>
+                    </div>
+
+                    <!-- New Dashboard Features -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+                        <!-- Trade Distribution Charts -->
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+                            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Trade Distribution</h3>
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-1">
+                                    <h4 class="text-md font-semibold mb-2 text-gray-800 dark:text-gray-200">By Instrument</h4>
+                                    <canvas id="instrument-chart" class="w-full h-48"></canvas>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-md font-semibold mb-2 text-gray-800 dark:text-gray-200">By Trade Type</h4>
+                                    <canvas id="type-chart" class="w-full h-48"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Best/Worst Trades -->
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+                            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Top/Bottom Trades</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h4 class="text-md font-semibold mb-2 text-gray-800 dark:text-gray-200">Best Trades (Net P/L)</h4>
+                                    <ul id="best-trades-list" class="space-y-2">
+                                        <li class="text-gray-600 dark:text-gray-400">No best trades yet.</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="text-md font-semibold mb-2 text-gray-800 dark:text-gray-200">Worst Trades (Net P/L)</h4>
+                                    <ul id="worst-trades-list" class="space-y-2">
+                                        <li class="text-gray-600 dark:text-gray-400">No worst trades yet.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
                 <!-- Trades Section -->
                 <section id="trades" class="mb-8">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold">Trade Log</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Trade Log</h2>
                         <button id="add-trade-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-300 flex items-center space-x-2">
                             <i class="fas fa-plus"></i>
                             <span>Log Trade</span>
                         </button>
                     </div>
-                    <div class="bg-white rounded-lg shadow overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <!-- Trade Filter/Search -->
+                    <div class="bg-white p-4 rounded-lg shadow mb-4 dark:bg-gray-800">
+                        <h3 class="text-lg font-bold mb-3 text-gray-900 dark:text-gray-100">Filter Trades</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="filter-scrip" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Scrip/Symbol</label>
+                                <input type="text" id="filter-scrip" placeholder="e.g., NIFTY" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                            </div>
+                            <div>
+                                <label for="filter-instrument" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Instrument</label>
+                                <select id="filter-instrument" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                                    <option value="">All</option>
+                                    <option value="futures">Futures</option>
+                                    <option value="options">Options</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="filter-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Position Type</label>
+                                <select id="filter-type" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                                    <option value="">All</option>
+                                    <option value="buy">Long (Buy)</option>
+                                    <option value="sell">Short (Sell)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <button id="apply-filters-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Apply Filters</button>
+                            <button id="clear-filters-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition duration-300 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-700">Clear Filters</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow overflow-x-auto dark:bg-gray-800">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                                 <tr>
                                     <th class="px-6 py-3">Scrip</th>
                                     <th class="px-6 py-3">Date</th>
@@ -119,62 +264,73 @@
                             </thead>
                             <tbody id="trades-table-body"></tbody>
                         </table>
-                         <div id="no-trades-message" class="text-center py-8 text-gray-500 hidden"><p>No trades logged yet. Click "Log Trade" to get started!</p></div>
+                         <div id="no-trades-message" class="text-center py-8 text-gray-500 dark:text-gray-400 hidden"><p>No trades logged yet. Click "Log Trade" to get started!</p></div>
                     </div>
                 </section>
 
                 <!-- Watchlist Section -->
                 <section id="watchlist">
-                     <h2 class="text-2xl font-bold mb-4">Watchlist</h2>
-                     <div class="bg-white p-4 rounded-lg shadow">
+                     <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Watchlist</h2>
+                     <div class="bg-white p-4 rounded-lg shadow dark:bg-gray-800">
                         <form id="add-watchlist-form" class="flex items-center space-x-2 mb-4">
-                            <input type="text" id="watchlist-symbol" placeholder="Add Scrip (e.g., NIFTY, RELIANCE)" class="flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            <input type="text" id="watchlist-symbol" placeholder="Add Scrip (e.g., NIFTY, RELIANCE)" class="flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required>
                             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Add</button>
                         </form>
                         <div id="watchlist-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-                         <div id="no-watchlist-message" class="text-center py-8 text-gray-500 hidden"><p>Your watchlist is empty. Add a scrip to start tracking.</p></div>
+                         <div id="no-watchlist-message" class="text-center py-8 text-gray-500 dark:text-gray-400 hidden"><p>Your watchlist is empty. Add a scrip to start tracking.</p></div>
                      </div>
                 </section>
             </div>
         </main>
 
         <!-- Footer -->
-        <footer class="bg-white mt-auto"><div class="container mx-auto px-6 py-4 text-center text-gray-500"><p>&copy; 2025 F&O TradeJournal. All Rights Reserved.</p></div></footer>
+        <footer class="bg-white mt-auto dark:bg-gray-900"><div class="container mx-auto px-6 py-4 text-center text-gray-500 dark:text-gray-400"><p>&copy; 2025 F&O TradeJournal. All Rights Reserved.</p></div></footer>
     </div>
 
     <!-- Add/Edit Trade Modal -->
     <div id="trade-modal-backdrop" class="modal-backdrop"></div>
-    <div id="trade-modal" class="modal bg-white rounded-lg shadow-xl w-11/12 md:w-2/3 lg:w-1/2 max-w-4xl">
+    <div id="trade-modal" class="modal bg-white rounded-lg shadow-xl w-11/12 md:w-2/3 lg:w-1/2 max-w-4xl dark:bg-gray-800">
         <form id="trade-form" class="p-6">
-            <h3 id="modal-title" class="text-xl font-bold mb-6">Log New Trade</h3>
+            <h3 id="modal-title" class="text-xl font-bold mb-6 text-gray-900 dark:text-gray-100">Log New Trade</h3>
             <input type="hidden" id="trade-id">
             <div class="form-section-grid mb-4">
-                <div><label for="scrip" class="block text-sm font-medium text-gray-700">Scrip/Symbol</label><input type="text" id="scrip" placeholder="e.g., NIFTY" class="mt-1 block w-full p-2 border rounded-md" required></div>
-                <div><label for="date" class="block text-sm font-medium text-gray-700">Date</label><input type="date" id="date" class="mt-1 block w-full p-2 border rounded-md" required></div>
-                <div><label for="instrument" class="block text-sm font-medium text-gray-700">Instrument</label><select id="instrument" class="mt-1 block w-full p-2 border rounded-md"><option value="futures">Futures</option><option value="options">Options</option></select></div>
+                <div><label for="scrip" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Scrip/Symbol</label><input type="text" id="scrip" placeholder="e.g., NIFTY" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
+                <div><label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label><input type="date" id="date" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
+                <div><label for="instrument" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Instrument</label><select id="instrument" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"><option value="futures">Futures</option><option value="options">Options</option></select></div>
             </div>
             <div id="options-fields" class="form-section-grid mb-4 hidden">
-                <div><label for="strikePrice" class="block text-sm font-medium text-gray-700">Strike Price</label><input type="number" id="strikePrice" step="any" placeholder="e.g., 22500" class="mt-1 block w-full p-2 border rounded-md"></div>
-                <div><label for="optionType" class="block text-sm font-medium text-gray-700">Option Type</label><select id="optionType" class="mt-1 block w-full p-2 border rounded-md"><option value="CE">CE (Call)</option><option value="PE">PE (Put)</option></select></div>
+                <div><label for="strikePrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Strike Price</label><input type="number" id="strikePrice" step="any" placeholder="e.g., 22500" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"></div>
+                <div><label for="optionType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Option Type</label><select id="optionType" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"><option value="CE">CE (Call)</option><option value="PE">PE (Put)</option></select></div>
             </div>
              <div class="form-section-grid mb-4">
-                <div><label for="type" class="block text-sm font-medium text-gray-700">Position</label><select id="type" class="mt-1 block w-full p-2 border rounded-md"><option value="buy">Long (Buy)</option><option value="sell">Short (Sell)</option></select></div>
-                <div><label for="lots" class="block text-sm font-medium text-gray-700">Lots</label><input type="number" id="lots" min="1" value="1" class="mt-1 block w-full p-2 border rounded-md" required></div>
-                <div><label for="lotSize" class="block text-sm font-medium text-gray-700">Lot Size</label><input type="number" id="lotSize" min="1" placeholder="e.g., 25 for BANKNIFTY" class="mt-1 block w-full p-2 border rounded-md" required></div>
+                <div><label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Position</label><select id="type" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"><option value="buy">Long (Buy)</option><option value="sell">Short (Sell)</option></select></div>
+                <div><label for="lots" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Lots</label><input type="number" id="lots" min="1" value="1" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
+                <div><label for="lotSize" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Lot Size</label><input type="number" id="lotSize" min="1" placeholder="e.g., 25 for BANKNIFTY" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
              </div>
             <div class="form-section-grid mb-4">
-                <div><label for="entryPrice" class="block text-sm font-medium text-gray-700">Avg. Entry Price</label><input type="number" id="entryPrice" step="any" placeholder="Premium" class="mt-1 block w-full p-2 border rounded-md" required></div>
-                <div><label for="exitPrice" class="block text-sm font-medium text-gray-700">Avg. Exit Price</label><input type="number" id="exitPrice" step="any" placeholder="Leave blank if open" class="mt-1 block w-full p-2 border rounded-md"></div>
-                <div><label for="brokerage" class="block text-sm font-medium text-gray-700">Brokerage & Charges (₹)</label><input type="number" id="brokerage" step="any" placeholder="e.g., 45.50" class="mt-1 block w-full p-2 border rounded-md" value="0"></div>
+                <div><label for="entryPrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Avg. Entry Price</label><input type="number" id="entryPrice" step="any" placeholder="Premium" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
+                <div><label for="exitPrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Avg. Exit Price</label><input type="number" id="exitPrice" step="any" placeholder="Leave blank if open" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"></div>
+                <div><label for="brokerage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Brokerage & Charges (₹)</label><input type="number" id="brokerage" step="any" placeholder="e.g., 45.50" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" value="0"></div>
             </div>
              <div class="mb-6">
-                <label for="strategy" class="block text-sm font-medium text-gray-700">Strategy / Setup</label>
-                <input type="text" id="strategy" placeholder="e.g., Breakout, Support Bounce" class="mt-1 block w-full p-2 border rounded-md">
-                <label for="notes" class="mt-4 block text-sm font-medium text-gray-700">Notes / Learnings</label>
-                <textarea id="notes" rows="3" class="mt-1 block w-full p-2 border rounded-md"></textarea>
+                <label for="strategy" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Strategy / Setup</label>
+                <input type="text" id="strategy" placeholder="e.g., Breakout, Support Bounce" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                <label for="notes" class="mt-4 block text-sm font-medium text-gray-700 dark:text-gray-300">Notes / Learnings</label>
+                <textarea id="notes" rows="3" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"></textarea>
             </div>
-            <div class="flex justify-end space-x-3"><button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">Cancel</button><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Save Trade</button></div>
+            <div class="flex justify-end space-x-3"><button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-700">Cancel</button><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Save Trade</button></div>
         </form>
+    </div>
+
+    <!-- Custom Alert/Confirmation Modal -->
+    <div id="custom-alert-modal-backdrop" class="modal-backdrop"></div>
+    <div id="custom-alert-modal" class="modal bg-white rounded-lg shadow-xl w-11/12 md:w-1/3 max-w-md p-6 text-center dark:bg-gray-800">
+        <h3 id="custom-alert-title" class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100"></h3>
+        <p id="custom-alert-message" class="mb-6 text-gray-700 dark:text-gray-300"></p>
+        <div class="flex justify-center space-x-4">
+            <button id="custom-alert-cancel" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 hidden dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-700">Cancel</button>
+            <button id="custom-alert-ok" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">OK</button>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -183,16 +339,17 @@
         import { getAuth, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, addDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, setDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Global variables for Firebase configuration, app ID, and authentication token
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config)
             : {
-            
+                // Default Firebase config (replace with your actual project config if needed)
                 apiKey: "AIzaSyAqY_XWGzPEdqKqjyTHE0KJyYhzg0yMdTQ",
-                authDomain: "mzrtrade-journal.firebaseapp.com",
-                projectId: "mzrtrade-journal",
-                storageBucket: "mzrtrade-journal.firebasestorage.app",
-                messagingSenderId: "297165567168",
-                appId: "1:297165567168:web:f8ee32f9ee27d672a5a925"
+  authDomain: "mzrtrade-journal.firebaseapp.com",
+  projectId: "mzrtrade-journal",
+  storageBucket: "mzrtrade-journal.firebasestorage.app",
+  messagingSenderId: "297165567168",
+  appId: "1:297165567168:web:f8ee32f9ee27d672a5a925",
             };
 
         const app = initializeApp(firebaseConfig);
@@ -203,7 +360,11 @@
         let currentUserId = null;
         let tradesUnsubscribe = null;
         let watchlistUnsubscribe = null;
+        let allTradesData = []; // Store all trades for export and dashboard features
 
+        // DOM Elements
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById('theme-toggle');
         const authSection = document.getElementById('auth-section');
         const appContent = document.getElementById('app-content');
         const authContainer = document.getElementById('auth-container');
@@ -228,7 +389,90 @@
         const winRateEl = document.getElementById('win-rate');
         const grossPlEl = document.getElementById('gross-pl');
         const netPlEl = document.getElementById('net-pl');
-        
+
+        // Export buttons
+        const exportPdfBtn = document.getElementById('export-pdf-btn');
+        const exportExcelBtn = document.getElementById('export-excel-btn');
+
+        // Chart Canvases
+        const instrumentChartCanvas = document.getElementById('instrument-chart');
+        const typeChartCanvas = document.getElementById('type-chart');
+
+        // Best/Worst Trades Lists
+        const bestTradesList = document.getElementById('best-trades-list');
+        const worstTradesList = document.getElementById('worst-trades-list');
+
+        // Filter Elements
+        const filterScripInput = document.getElementById('filter-scrip');
+        const filterInstrumentSelect = document.getElementById('filter-instrument');
+        const filterTypeSelect = document.getElementById('filter-type');
+        const applyFiltersBtn = document.getElementById('apply-filters-btn');
+        const clearFiltersBtn = document.getElementById('clear-filters-btn');
+
+        // Custom Alert/Confirmation Modal Elements
+        const customAlertModal = document.getElementById('custom-alert-modal');
+        const customAlertModalBackdrop = document.getElementById('custom-alert-modal-backdrop');
+        const customAlertTitle = document.getElementById('custom-alert-title');
+        const customAlertMessage = document.getElementById('custom-alert-message');
+        const customAlertOkBtn = document.getElementById('custom-alert-ok');
+        const customAlertCancelBtn = document.getElementById('custom-alert-cancel');
+
+        // --- Theme Toggle Logic ---
+        // Check local storage for theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            htmlElement.classList.add('dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+            // Redraw charts if they exist to update colors
+            if (allTradesData.length > 0) {
+                drawCharts(allTradesData);
+            }
+        });
+
+        // Function to show custom alert/confirmation
+        function showCustomAlert(title, message, isConfirm = false) {
+            return new Promise((resolve) => {
+                customAlertTitle.textContent = title;
+                customAlertMessage.textContent = message;
+                customAlertCancelBtn.style.display = isConfirm ? 'inline-block' : 'none';
+                
+                customAlertModal.style.display = 'block';
+                customAlertModalBackdrop.style.display = 'block';
+
+                const handleOk = () => {
+                    closeCustomAlert();
+                    resolve(true);
+                };
+
+                const handleCancel = () => {
+                    closeCustomAlert();
+                    resolve(false);
+                };
+
+                customAlertOkBtn.onclick = handleOk;
+                customAlertCancelBtn.onclick = handleCancel;
+                customAlertModalBackdrop.onclick = handleCancel; // Allow clicking backdrop to cancel for confirmation
+            });
+        }
+
+        // Function to close custom alert/confirmation
+        function closeCustomAlert() {
+            customAlertModal.style.display = 'none';
+            customAlertModalBackdrop.style.display = 'none';
+            customAlertOkBtn.onclick = null;
+            customAlertCancelBtn.onclick = null;
+            customAlertModalBackdrop.onclick = null;
+        }
+
+        // --- Authentication Logic ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUserId = user.uid;
@@ -254,7 +498,13 @@
             }
         });
 
-        function logOut() { signOut(auth).catch(error => console.error("Sign out error", error)); }
+        function logOut() {
+            showCustomAlert('Confirm Logout', 'Are you sure you want to log out?', true).then((result) => {
+                if (result) {
+                    signOut(auth).catch(error => console.error("Sign out error", error));
+                }
+            });
+        }
 
         function updateUIForUser() {
             authSection.style.display = 'none';
@@ -272,6 +522,9 @@
             tradesTableBody.innerHTML = '';
             watchlistItems.innerHTML = '';
             updateDashboardStats([]);
+            // Clear charts and best/worst lists when logged out
+            drawCharts([]);
+            displayBestWorstTrades([]);
         }
 
         async function setupListeners(userId) {
@@ -279,8 +532,11 @@
             const tradesRef = collection(db, "artifacts", appId, "users", userId, "trades");
             tradesUnsubscribe = onSnapshot(tradesRef, (snapshot) => {
                 const trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderTrades(trades);
+                allTradesData = trades; // Store trades for export and dashboard features
+                renderTrades(trades); // Render with no filters initially
                 updateDashboardStats(trades);
+                drawCharts(trades);
+                displayBestWorstTrades(trades);
             }, error => console.error("Error fetching trades:", error));
 
             const watchlistRef = collection(db, "artifacts", appId, "users", userId, "watchlist");
@@ -295,6 +551,7 @@
             if (watchlistUnsubscribe) watchlistUnsubscribe();
         }
         
+        // --- Trade Logging and Display ---
         function getScripDisplayName(trade) {
             let name = trade.scrip.toUpperCase();
             if (trade.instrument === 'options') {
@@ -305,16 +562,26 @@
 
         function renderTrades(trades) {
             tradesTableBody.innerHTML = '';
-            noTradesMessage.classList.toggle('hidden', trades.length > 0);
-            if (trades.length > 0) {
-                trades.sort((a, b) => new Date(b.date) - new Date(a.date));
-                trades.forEach(trade => {
+            
+            // Apply filters before rendering
+            const filteredTrades = trades.filter(trade => {
+                const scripMatch = filterScripInput.value ? trade.scrip.toLowerCase().includes(filterScripInput.value.toLowerCase()) : true;
+                const instrumentMatch = filterInstrumentSelect.value ? trade.instrument === filterInstrumentSelect.value : true;
+                const typeMatch = filterTypeSelect.value ? trade.type === filterTypeSelect.value : true;
+                return scripMatch && instrumentMatch && typeMatch;
+            });
+
+            noTradesMessage.classList.toggle('hidden', filteredTrades.length > 0);
+
+            if (filteredTrades.length > 0) {
+                filteredTrades.sort((a, b) => new Date(b.date) - new Date(a.date));
+                filteredTrades.forEach(trade => {
                     const { netPL } = calculatePL(trade);
                     const plColor = netPL.value >= 0 ? 'text-green-600' : 'text-red-600';
-                    const typeClass = trade.type === 'buy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                    const typeClass = trade.type === 'buy' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
                     const row = `
-                        <tr class="bg-white border-b hover:bg-gray-50">
-                            <td class="px-6 py-4 font-medium text-gray-900">${getScripDisplayName(trade)}</td>
+                        <tr class="bg-white border-b hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                            <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">${getScripDisplayName(trade)}</td>
                             <td class="px-6 py-4">${trade.date}</td>
                             <td class="px-6 py-4">${trade.strategy || 'N/A'}</td>
                             <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${typeClass}">${trade.type.toUpperCase()}</span></td>
@@ -366,9 +633,11 @@
             const deleteBtn = e.target.closest('.delete-btn');
             if (deleteBtn) {
                 const id = deleteBtn.dataset.id;
-                if (window.confirm('Are you sure you want to delete this trade?')) {
-                    await deleteDoc(doc(db, "artifacts", appId, "users", currentUserId, "trades", id));
-                }
+                showCustomAlert('Confirm Deletion', 'Are you sure you want to delete this trade?', true).then(async (result) => {
+                    if (result) {
+                        await deleteDoc(doc(db, "artifacts", appId, "users", currentUserId, "trades", id));
+                    }
+                });
             }
         });
         
@@ -405,12 +674,25 @@
         cancelBtn.addEventListener('click', closeTradeModal);
         tradeModalBackdrop.addEventListener('click', closeTradeModal);
 
+        // --- Trade Filtering Logic ---
+        applyFiltersBtn.addEventListener('click', () => {
+            renderTrades(allTradesData); // Re-render trades with current filter values
+        });
+
+        clearFiltersBtn.addEventListener('click', () => {
+            filterScripInput.value = '';
+            filterInstrumentSelect.value = '';
+            filterTypeSelect.value = '';
+            renderTrades(allTradesData); // Re-render all trades
+        });
+
+        // --- Watchlist Logic ---
         function renderWatchlist(items) {
             watchlistItems.innerHTML = '';
             noWatchlistMessage.classList.toggle('hidden', items.length > 0);
             if (items.length > 0) {
                 items.forEach(item => {
-                    watchlistItems.innerHTML += `<div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm"><span class="font-bold text-gray-800">${item.symbol.toUpperCase()}</span><button class="delete-watchlist-btn text-gray-400 hover:text-red-500" data-id="${item.id}">&times;</button></div>`;
+                    watchlistItems.innerHTML += `<div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm dark:bg-gray-700 dark:text-gray-100"><span class="font-bold text-gray-800 dark:text-gray-200">${item.symbol.toUpperCase()}</span><button class="delete-watchlist-btn text-gray-400 hover:text-red-500" data-id="${item.id}">&times;</button></div>`;
                 });
             }
         }
@@ -431,12 +713,15 @@
         watchlistItems.addEventListener('click', async (e) => {
             if (e.target.classList.contains('delete-watchlist-btn')) {
                 const id = e.target.dataset.id;
-                if (window.confirm('Remove this scrip from your watchlist?')) {
-                    await deleteDoc(doc(db, "artifacts", appId, "users", currentUserId, "watchlist", id));
-                }
+                showCustomAlert('Confirm Deletion', 'Remove this scrip from your watchlist?', true).then(async (result) => {
+                    if (result) {
+                        await deleteDoc(doc(db, "artifacts", appId, "users", currentUserId, "watchlist", id));
+                    }
+                });
             }
         });
 
+        // --- P/L Calculation and Dashboard Stats ---
         function calculatePL(trade) {
             if (trade.exitPrice === null || trade.exitPrice === undefined) {
                 return { grossPL: {value: 0, display: 'Open'}, netPL: {value: 0, display: 'Open'} };
@@ -471,7 +756,230 @@
             setPLEl(grossPlEl, totalGrossPL);
             setPLEl(netPlEl, totalNetPL);
         }
+
+        // --- Chart Drawing Functions ---
+        function drawCharts(trades) {
+            // Clear previous charts
+            const ctxInstrument = instrumentChartCanvas.getContext('2d');
+            const ctxType = typeChartCanvas.getContext('2d');
+            ctxInstrument.clearRect(0, 0, instrumentChartCanvas.width, instrumentChartCanvas.height);
+            ctxType.clearRect(0, 0, typeChartCanvas.width, typeChartCanvas.height);
+
+            if (trades.length === 0) {
+                return; // No data to draw charts
+            }
+
+            // Instrument Distribution
+            const instrumentCounts = trades.reduce((acc, trade) => {
+                acc[trade.instrument] = (acc[trade.instrument] || 0) + 1;
+                return acc;
+            }, {});
+            const instrumentLabels = Object.keys(instrumentCounts);
+            const instrumentData = Object.values(instrumentCounts);
+
+            // Trade Type Distribution
+            const typeCounts = trades.reduce((acc, trade) => {
+                acc[trade.type] = (acc[trade.type] || 0) + 1;
+                return acc;
+            }, {});
+            const typeLabels = Object.keys(typeCounts);
+            const typeData = Object.values(typeCounts);
+
+            const isDarkMode = htmlElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#e2e8f0' : '#374151'; // gray-200 or gray-800
+            const backgroundColor = isDarkMode ? ['#4299e1', '#a0aec0'] : ['#3182ce', '#a0aec0']; // blue-500, gray-400
+
+            // Helper to draw a pie chart
+            function drawPieChart(ctx, data, labels, colors) {
+                const total = data.reduce((sum, val) => sum + val, 0);
+                let startAngle = 0;
+                const centerX = ctx.canvas.width / 2;
+                const centerY = ctx.canvas.height / 2;
+                const radius = Math.min(centerX, centerY) * 0.7;
+
+                data.forEach((value, i) => {
+                    const sliceAngle = (value / total) * 2 * Math.PI;
+                    const endAngle = startAngle + sliceAngle;
+
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                    ctx.closePath();
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.fill();
+
+                    // Draw labels
+                    const midAngle = startAngle + sliceAngle / 2;
+                    const labelX = centerX + radius * 0.8 * Math.cos(midAngle);
+                    const labelY = centerY + radius * 0.8 * Math.sin(midAngle);
+                    ctx.fillStyle = textColor;
+                    ctx.font = '10px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                    ctx.fillText(`${labels[i]} (${percentage}%)`, labelX, labelY);
+
+                    startAngle = endAngle;
+                });
+            }
+
+            drawPieChart(ctxInstrument, instrumentData, instrumentLabels, ['#4299e1', '#a0aec0']); // blue-500, gray-400
+            drawPieChart(ctxType, typeData, typeLabels, ['#48bb78', '#fc8181']); // green-500, red-400
+        }
+
+        // --- Best/Worst Trades Display ---
+        function displayBestWorstTrades(trades) {
+            const closedTrades = trades.filter(t => t.exitPrice !== null && t.exitPrice !== undefined);
+            const tradesWithPL = closedTrades.map(trade => ({
+                ...trade,
+                netPLValue: calculatePL(trade).netPL.value,
+                netPLDisplay: calculatePL(trade).netPL.display
+            }));
+
+            // Sort by net P/L
+            const sortedTrades = [...tradesWithPL].sort((a, b) => b.netPLValue - a.netPLValue);
+
+            // Best Trades (top 3 positive P/L)
+            const bestTrades = sortedTrades.filter(t => t.netPLValue > 0).slice(0, 3);
+            bestTradesList.innerHTML = '';
+            if (bestTrades.length > 0) {
+                bestTrades.forEach(trade => {
+                    const li = document.createElement('li');
+                    li.className = 'text-green-600 dark:text-green-400';
+                    li.innerHTML = `<span class="font-semibold">${getScripDisplayName(trade)}</span>: ${trade.netPLDisplay}`;
+                    bestTradesList.appendChild(li);
+                });
+            } else {
+                bestTradesList.innerHTML = '<li class="text-gray-600 dark:text-gray-400">No best trades yet.</li>';
+            }
+
+            // Worst Trades (top 3 negative P/L)
+            const worstTrades = sortedTrades.filter(t => t.netPLValue < 0).slice(-3).reverse(); // Get last 3 negative and reverse to show worst first
+            worstTradesList.innerHTML = '';
+            if (worstTrades.length > 0) {
+                worstTrades.forEach(trade => {
+                    const li = document.createElement('li');
+                    li.className = 'text-red-600 dark:text-red-400';
+                    li.innerHTML = `<span class="font-semibold">${getScripDisplayName(trade)}</span>: ${trade.netPLDisplay}`;
+                    worstTradesList.appendChild(li);
+                });
+            } else {
+                worstTradesList.innerHTML = '<li class="text-gray-600 dark:text-gray-400">No worst trades yet.</li>';
+            }
+        }
+
+
+        // --- Export Functionality ---
+
+        // Export to PDF
+        exportPdfBtn.addEventListener('click', () => {
+            if (allTradesData.length === 0) {
+                showCustomAlert('No Data', 'There are no trades to export to PDF.', false);
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(18);
+            doc.text("F&O Trade Journal Entries", 14, 22);
+
+            doc.setFontSize(10);
+            doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 14, 28);
+            doc.text(`Total Trades: ${totalTradesEl.textContent}`, 14, 34);
+            doc.text(`Win Rate: ${winRateEl.textContent}`, 14, 40);
+            doc.text(`Net P/L: ${netPlEl.textContent}`, 14, 46);
+
+            const tableColumn = ["Scrip", "Date", "Instrument", "Type", "Lots", "Entry Price", "Exit Price", "Brokerage", "Gross P/L", "Net P/L", "Strategy", "Notes"];
+            const tableRows = [];
+
+            allTradesData.forEach(trade => {
+                const { grossPL, netPL } = calculatePL(trade);
+                const tradeRow = [
+                    getScripDisplayName(trade),
+                    trade.date,
+                    trade.instrument,
+                    trade.type,
+                    trade.lots,
+                    trade.entryPrice,
+                    trade.exitPrice !== null ? trade.exitPrice : 'Open',
+                    trade.brokerage,
+                    grossPL.display,
+                    netPL.display,
+                    trade.strategy || 'N/A',
+                    trade.notes || ''
+                ];
+                tableRows.push(tradeRow);
+            });
+
+            doc.autoTable({
+                head: [tableColumn],
+                body: tableRows,
+                startY: 55,
+                theme: 'striped',
+                headStyles: { fillColor: [30, 144, 255] }, // Dodger Blue
+                styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+                columnStyles: {
+                    0: { cellWidth: 25 }, // Scrip
+                    1: { cellWidth: 20 }, // Date
+                    2: { cellWidth: 20 }, // Instrument
+                    3: { cellWidth: 15 }, // Type
+                    4: { cellWidth: 10 }, // Lots
+                    5: { cellWidth: 20 }, // Entry Price
+                    6: { cellWidth: 20 }, // Exit Price
+                    7: { cellWidth: 18 }, // Brokerage
+                    8: { cellWidth: 18 }, // Gross P/L
+                    9: { cellWidth: 18 }, // Net P/L
+                    10: { cellWidth: 25 }, // Strategy
+                    11: { cellWidth: 30 }  // Notes
+                }
+            });
+
+            doc.save('trade_journal.pdf');
+            showCustomAlert('Export Complete', 'Your trade entries have been downloaded as PDF.', false);
+        });
+
+        // Export to Excel
+        exportExcelBtn.addEventListener('click', () => {
+            if (allTradesData.length === 0) {
+                showCustomAlert('No Data', 'There are no trades to export to Excel.', false);
+                return;
+            }
+
+            const ws_data = [
+                ["Scrip", "Date", "Instrument", "Strike Price", "Option Type", "Position Type", "Lots", "Lot Size", "Entry Price", "Exit Price", "Brokerage", "Gross P/L", "Net P/L", "Strategy", "Notes"]
+            ];
+
+            allTradesData.forEach(trade => {
+                const { grossPL, netPL } = calculatePL(trade);
+                ws_data.push([
+                    getScripDisplayName(trade),
+                    trade.date,
+                    trade.instrument,
+                    trade.strikePrice || '',
+                    trade.optionType || '',
+                    trade.type,
+                    trade.lots,
+                    trade.lotSize,
+                    trade.entryPrice,
+                    trade.exitPrice !== null ? trade.exitPrice : '',
+                    trade.brokerage,
+                    grossPL.value,
+                    netPL.value,
+                    trade.strategy || '',
+                    trade.notes || ''
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Trade Journal");
+            XLSX.writeFile(wb, "trade_journal.xlsx");
+            showCustomAlert('Export Complete', 'Your trade entries have been downloaded as Excel.', false);
+        });
         
     </script>
+    <!-- Include jspdf-autotable for PDF table generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>
