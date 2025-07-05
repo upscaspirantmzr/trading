@@ -1,1 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F&O Trade Journal - Indian Market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+        }
+        .form-section-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
 
+    <!-- App Container -->
+    <div id="app" class="min-h-screen flex flex-col">
+
+        <!-- Header -->
+        <header class="bg-white shadow-md sticky top-0 z-30">
+            <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-chart-line text-2xl text-blue-600"></i>
+                    <h1 class="text-xl font-bold text-gray-900">F&O TradeJournal</h1>
+                </div>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#dashboard" class="nav-link text-gray-600 hover:text-blue-600">Dashboard</a>
+                    <a href="#trades" class="nav-link text-gray-600 hover:text-blue-600">Trades</a>
+                    <a href="#watchlist" class="nav-link text-gray-600 hover:text-blue-600">Watchlist</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                     <div id="auth-container">
+                        <!-- Auth buttons will be injected here -->
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto p-4 md:p-6">
+            
+            <!-- Auth Section -->
+            <div id="auth-section" class="text-center py-16">
+                <h2 class="text-3xl font-bold mb-4">Welcome to Your F&O Trade Journal</h2>
+                <p class="text-gray-600 mb-8 max-w-2xl mx-auto">Please sign in to log your trades, analyze your strategy, and track your performance in the Indian F&O market.</p>
+                <div id="auth-buttons-main" class="flex justify-center space-x-4"></div>
+                 <div id="user-info" class="hidden mt-4">
+                    <p class="text-gray-600">Your User ID: <span id="user-id-display" class="font-mono bg-gray-200 p-1 rounded"></span></p>
+                </div>
+            </div>
+
+            <!-- App Content (hidden by default) -->
+            <div id="app-content" class="hidden">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="mb-8">
+                    <h2 class="text-2xl font-bold mb-4">Performance Dashboard</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Total Trades</h3><p id="total-trades" class="text-3xl font-bold mt-2">0</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Win Rate</h3><p id="win-rate" class="text-3xl font-bold mt-2">0%</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Gross P/L</h3><p id="gross-pl" class="text-3xl font-bold mt-2 text-gray-800">₹0.00</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Net P/L (After Charges)</h3><p id="net-pl" class="text-3xl font-bold mt-2 text-gray-800">₹0.00</p></div>
+                    </div>
+                </section>
+
+                <!-- Trades Section -->
+                <section id="trades" class="mb-8">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold">Trade Log</h2>
+                        <button id="add-trade-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-300 flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Log Trade</span>
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-lg shadow overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3">Scrip</th>
+                                    <th class="px-6 py-3">Date</th>
+                                    <th class="px-6 py-3">Setup/Strategy</th>
+                                    <th class="px-6 py-3">Type</th>
+                                    <th class="px-6 py-3">Net P/L</th>
+                                    <th class="px-6 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trades-table-body"></tbody>
+                        </table>
+                         <div id="no-trades-message" class="text-center py-8 text-gray-500 hidden"><p>No trades logged yet. Click "Log Trade" to get started!</p></div>
+                    </div>
+                </section>
+
+                <!-- Watchlist Section -->
+                <section id="watchlist">
+                     <h2 class="text-2xl font-bold mb-4">Watchlist</h2>
+                     <div class="bg-white p-4 rounded-lg shadow">
+                        <form id="add-watchlist-form" class="flex items-center space-x-2 mb-4">
+                            <input type="text" id="watchlist-symbol" placeholder="Add Scrip (e.g., NIFTY, RELIANCE)" class="flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Add</button>
+                        </form>
+                        <div id="watchlist-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
+                         <div id="no-watchlist-message" class="text-center py-8 text-gray-500 hidden"><p>Your watchlist is empty. Add a scrip to start tracking.</p></div>
+                     </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white mt-auto"><div class="container mx-auto px-6 py-4 text-center text-gray-500"><p>&copy; 2025 F&O TradeJournal. All Rights Reserved.</p></div></footer>
+    </div>
+
+    <!-- Add/Edit Trade Modal -->
+    <div id="trade-modal-backdrop" class="modal-backdrop"></div>
+    <div id="trade-modal" class="modal bg-white rounded-lg shadow-xl w-11/12 md:w-2/3 lg:w-1/2 max-w-4xl">
+        <form id="trade-form" class="p-6">
+            <h3 id="modal-title" class="text-xl font-bold mb-6">Log New Trade</h3>
+            <input type="hidden" id="trade-id">
+            
+            <!-- Trade Details -->
+            <div class="form-section-grid mb-4">
+                <div><label for="scrip" class="block text-sm font-medium text-gray-700">Scrip/Symbol</label><input type="text" id="scrip" placeholder="e.g., NIFTY" class="mt-1 block w-full p-2 border rounded-md" required></div>
+                <div><label for="date" class="block text-sm font-medium text-gray-700">Date</label><input type="date" id="date" class="mt-1 block w-full p-2 border rounded-md" required></div>
+                <div><label for="instrument" class="block text-sm font-medium text-gray-700">Instrument</label><select id="instrument" class="mt-1 block w-full p-2 border rounded-md"><option value="futures">Futures</option><option value="options">Options</option></select></div>
+            </div>
+
+            <!-- Options Specific Fields (hidden by default) -->
+            <div id="options-fields" class="form-section-grid mb-4 hidden">
+                <div><label for="strikePrice" class="block text-sm font-medium text-gray-700">Strike Price</label><input type="number" id="strikePrice" step="any" placeholder="e.g., 22500" class="mt-1 block w-full p-2 border rounded-md"></div>
+                <div><label for="optionType" class="block text-sm font-medium text-gray-700">Option Type</label><select id="optionType" class="mt-1 block w-full p-2 border rounded-md"><option value="CE">CE (Call)</option><option value="PE">PE (Put)</option></select></div>
+            </div>
+
+            <!-- Position Details -->
+             <div class="form-section-grid mb-4">
+                <div><label for="type" class="block text-sm font-medium text-gray-700">Position</label><select id="type" class="mt-1 block w-full p-2 border rounded-md"><option value="buy">Long (Buy)</option><option value="sell">Short (Sell)</option></select></div>
+                <div><label for="lots" class="block text-sm font-medium text-gray-700">Lots</label><input type="number" id="lots" min="1" value="1" class="mt-1 block w-full p-2 border rounded-md" required></div>
+                <div><label for="lotSize" class="block text-sm font-medium text-gray-700">Lot Size</label><input type="number" id="lotSize" min="1" placeholder="e.g., 50 for NIFTY" class="mt-1 block w-full p-2 border rounded-md" required></div>
+             </div>
+
+            <!-- Financials -->
+            <div class="form-section-grid mb-4">
+                <div><label for="entryPrice" class="block text-sm font-medium text-gray-700">Avg. Entry Price</label><input type="number" id="entryPrice" step="any" placeholder="Premium" class="mt-1 block w-full p-2 border rounded-md" required></div>
+                <div><label for="exitPrice" class="block text-sm font-medium text-gray-700">Avg. Exit Price</label><input type="number" id="exitPrice" step="any" placeholder="Leave blank if open" class="mt-1 block w-full p-2 border rounded-md"></div>
+                <div><label for="brokerage" class="block text-sm font-medium text-gray-700">Brokerage & Charges (₹)</label><input type="number" id="brokerage" step="any" placeholder="e.g., 45.50" class="mt-1 block w-full p-2 border rounded-md" value="0"></div>
+            </div>
+
+             <!-- Strategy & Notes -->
+             <div class="mb-6">
+                <label for="strategy" class="block text-sm font-medium text-gray-700">Strategy / Setup</label>
+                <input type="text" id="strategy" placeholder="e.g., Breakout, Support Bounce" class="mt-1 block w-full p-2 border rounded-md">
+                <label for="notes" class="mt-4 block text-sm font-medium text-gray-700">Notes / Learnings</label>
+                <textarea id="notes" rows="3" class="mt-1 block w-full p-2 border rounded-md"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3"><button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">Cancel</button><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Save Trade</button></div>
+        </form>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, addDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config)
+            : {
+                apiKey: "AIzaSyAqY_XWGzPEdqKqjyTHE0KJyYhzg0yMdTQ",
+                authDomain: "mzrtrade-journal.firebaseapp.com",
+                projectId: "mzrtrade-journal",
+                storageBucket: "mzrtrade-journal.firebasestorage.app",
+                messagingSenderId: "297165567168",
+                appId: "1:297165567168:web:f8ee32f9ee27d672a5a925"
+            };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'fno-journal-default';
+
+        let currentUserId = null;
+        let tradesUnsubscribe = null;
+        let watchlistUnsubscribe = null;
+
+        const authSection = document.getElementById('auth-section');
+        const appContent = document.getElementById('app-content');
+        const authContainer = document.getElementById('auth-container');
+        const authButtonsMain = document.getElementById('auth-buttons-main');
+        const userInfo = document.getElementById('user-info');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const addTradeBtn = document.getElementById('add-trade-btn');
+        const tradeModal = document.getElementById('trade-modal');
+        const tradeModalBackdrop = document.getElementById('trade-modal-backdrop');
+        const tradeForm = document.getElementById('trade-form');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const modalTitle = document.getElementById('modal-title');
+        const instrumentSelect = document.getElementById('instrument');
+        const optionsFields = document.getElementById('options-fields');
+        const tradesTableBody = document.getElementById('trades-table-body');
+        const noTradesMessage = document.getElementById('no-trades-message');
+        const addWatchlistForm = document.getElementById('add-watchlist-form');
+        const watchlistItems = document.getElementById('watchlist-items');
+        const noWatchlistMessage = document.getElementById('no-watchlist-message');
+        const totalTradesEl = document.getElementById('total-trades');
+        const winRateEl = document.getElementById('win-rate');
+        const grossPlEl = document.getElementById('gross-pl');
+        const netPlEl = document.getElementById('net-pl');
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                updateUIForUser(user);
+                await setupListeners(user.uid);
+            } else {
+                currentUserId = null;
+                updateUIForGuest();
+                cleanupListeners();
+            }
+        });
+        
+        async function signIn() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) { console.error("Error signing in:", error); }
+        }
+
+        function logOut() { signOut(auth).catch(error => console.error("Sign out error", error)); }
+
+        function updateUIForUser(user) {
+            authSection.classList.add('hidden');
+            appContent.classList.remove('hidden');
+            authContainer.innerHTML = `<button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition">Logout</button>`;
+            document.getElementById('logout-btn').addEventListener('click', logOut);
+            userIdDisplay.textContent = user.uid;
+            userInfo.classList.remove('hidden');
+        }
+
+        function updateUIForGuest() {
+            authSection.classList.remove('hidden');
+            appContent.classList.add('hidden');
+            userInfo.classList.add('hidden');
+            const signInButtonHTML = `<button id="signin-btn" class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition text-lg font-semibold">Sign In & Start Journaling</button>`;
+            authContainer.innerHTML = signInButtonHTML;
+            authButtonsMain.innerHTML = signInButtonHTML;
+            document.getElementById('signin-btn').addEventListener('click', signIn);
+            document.querySelector('#auth-buttons-main #signin-btn').addEventListener('click', signIn);
+            tradesTableBody.innerHTML = '';
+            watchlistItems.innerHTML = '';
+            updateDashboardStats([]);
+        }
+
+        async function setupListeners(userId) {
+            cleanupListeners();
+            const tradesRef = collection(db, "artifacts", appId, "users", userId, "trades");
+            tradesUnsubscribe = onSnapshot(tradesRef, (snapshot) => {
+                const trades = [];
+                snapshot.forEach(doc => trades.push({ id: doc.id, ...doc.data() }));
+                renderTrades(trades);
+                updateDashboardStats(trades);
+            }, error => console.error("Error fetching trades:", error));
+
+            const watchlistRef = collection(db, "artifacts", appId, "users", userId, "watchlist");
+            watchlistUnsubscribe = onSnapshot(watchlistRef, (snapshot) => {
+                const items = [];
+                snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+                renderWatchlist(items);
+            }, error => console.error("Error fetching watchlist:", error));
+        }
+
+        function cleanupListeners() {
+            if (tradesUnsubscribe) tradesUnsubscribe();
+            if (watchlistUnsubscribe) watchlistUnsubscribe();
+        }
+        
+        function getScripDisplayName(trade) {
+            let name = trade.scrip.toUpperCase();
+            if (trade.instrument === 'options') {
+                name += ` ${trade.strikePrice} ${trade.optionType}`;
+            }
+            return name;
+        }
+
+        function renderTrades(trades) {
+            tradesTableBody.innerHTML = '';
+            if (trades.length === 0) {
+                noTradesMessage.classList.remove('hidden');
+            } else {
+                noTradesMessage.classList.add('hidden');
+                trades.sort((a, b) => new Date(b.date) - new Date(a.date));
+                trades.forEach(trade => {
+                    const { netPL } = calculatePL(trade);
+                    const plColor = netPL.value >= 0 ? 'text-green-600' : 'text-red-600';
+                    const typeClass = trade.type === 'buy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                    const row = `
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">${getScripDisplayName(trade)}</td>
+                            <td class="px-6 py-4">${trade.date}</td>
+                            <td class="px-6 py-4">${trade.strategy || 'N/A'}</td>
+                            <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${typeClass}">${trade.type.toUpperCase()}</span></td>
+                            <td class="px-6 py-4 font-medium ${plColor}">${netPL.display}</td>
+                            <td class="px-6 py-4 flex items-center space-x-3">
+                                <button class="edit-btn text-blue-600 hover:text-blue-900" data-id="${trade.id}"><i class="fas fa-pencil-alt"></i></button>
+                                <button class="delete-btn text-red-600 hover:text-red-900" data-id="${trade.id}"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                    tradesTableBody.innerHTML += row;
+                });
+            }
+        }
+
+        tradeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserId) return;
+            const id = document.getElementById('trade-id').value;
+            const tradeData = {
+                scrip: document.getElementById('scrip').value,
+                date: document.getElementById('date').value,
+                instrument: document.getElementById('instrument').value,
+                strikePrice: document.getElementById('strikePrice').value ? parseFloat(document.getElementById('strikePrice').value) : null,
+                optionType: document.getElementById('optionType').value,
+                type: document.getElementById('type').value,
+                lots: parseInt(document.getElementById('lots').value),
+                lotSize: parseInt(document.getElementById('lotSize').value),
+                entryPrice: parseFloat(document.getElementById('entryPrice').value),
+                exitPrice: document.getElementById('exitPrice').value ? parseFloat(document.getElementById('exitPrice').value) : null,
+                brokerage: document.getElementById('brokerage').value ? parseFloat(document.getElementById('brokerage').value) : 0,
+                strategy: document.getElementById('strategy').value,
+                notes: document.getElementById('notes').value,
+            };
+            try {
+                const tradesRef = collection(db, "artifacts", appId, "users", currentUserId, "trades");
+                if (id) {
+                    await updateDoc(doc(tradesRef, id), tradeData);
+                } else {
+                    await addDoc(tradesRef, tradeData);
+                }
+                closeTradeModal();
+            } catch (error) { console.error("Error saving trade:", error); }
+        });
+
+        tradesTableBody.addEventListener('click', async (e) => {
+            if (e.target.closest('.edit-btn')) {
+                const id = e.target.closest('.edit-btn').dataset.id;
+                const tradeDoc = await getDocs(query(collection(db, "artifacts", appId, "users", currentUserId, "trades"), where('__name__', '==', id)));
+                if (!tradeDoc.empty) openTradeModal(id, tradeDoc.docs[0].data());
+            }
+            if (e.target.closest('.delete-btn')) {
+                const id = e.target.closest('.delete-btn').dataset.id;
+                // A custom modal would be better, but confirm is simpler for this example
+                if (window.confirm('Are you sure you want to delete this trade?')) {
+                    await deleteDoc(doc(db, "artifacts", appId, "users", currentUserId, "trades", id));
+                }
+            }
+        });
+        
+        instrumentSelect.addEventListener('change', (e) => {
+            optionsFields.classList.toggle('hidden', e.target.value !== 'options');
+        });
+
+        function openTradeModal(id = null, trade = {}) {
+            tradeForm.reset();
+            document.getElementById('trade-id').value = id || '';
+            modalTitle.textContent = id ? 'Edit Trade' : 'Log New Trade';
+            if (id) {
+                document.getElementById('scrip').value = trade.scrip;
+                document.getElementById('date').value = trade.date;
+                document.getElementById('instrument').value = trade.instrument;
+                document.getElementById('strikePrice').value = trade.strikePrice || '';
+                document.getElementById('optionType').value = trade.optionType || 'CE';
+                document.getElementById('type').value = trade.type;
+                document.getElementById('lots').value = trade.lots;
+                document.getElementById('lotSize').value = trade.lotSize;
+                document.getElementById('entryPrice').value = trade.entryPrice;
+                document.getElementById('exitPrice').value = trade.exitPrice || '';
+                document.getElementById('brokerage').value = trade.brokerage || 0;
+                document.getElementById('strategy').value = trade.strategy || '';
+                document.getElementById('notes').value = trade.notes || '';
+            } else {
+                 document.getElementById('date').valueAsDate = new Date();
+            }
+            optionsFields.classList.toggle('hidden', document.getElementById('instrument').value !== 'options');
+            tradeModal.style.display = 'block';
+            tradeModalBackdrop.style.display = 'block';
+        }
+
+        function closeTradeModal() {
+            tradeModal.style.display = 'none';
+            tradeModalBackdrop.style.display = 'none';
+        }
+
+        addTradeBtn.addEventListener('click', () => openTradeModal());
+        cancelBtn.addEventListener('click', closeTradeModal);
+        tradeModalBackdrop.addEventListener('click', closeTradeModal);
+
+        function renderWatchlist(items) {
+            watchlistItems.innerHTML = '';
+             if (items.length === 0) {
+                noWatchlistMessage.classList.remove('hidden');
+            } else {
+                noWatchlistMessage.classList.add('hidden');
+                items.forEach(item => {
+                    watchlistItems.innerHTML += `<div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm"><span class="font-bold text-gray-800">${item.symbol.toUpperCase()}</span><button class="delete-watchlist-btn text-gray-400 hover:text-red-500" data-id="${item.id}">&times;</button></div>`;
+                });
+            }
+        }
+
+        addWatchlistForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserId) return;
+            const symbolInput = document.getElementById('watchlist-symbol');
+            const symbol = symbolInput.value.trim().toUpperCase();
+            if (symbol) {
+                try {
+                    await setDoc(doc(db, "artifacts", appId, "users", currentUserId, "watchlist", symbol), { symbol: symbol });
+                    symbolInput.value = '';
+                } catch (error) { console.error("Error adding to watchlist:", error); }
+            }
+        });
+
+        watchlistItems.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('delete-watchlist-btn')) {
+                const id = e.target.dataset.id;
+                if (window.confirm('Remove this scrip from your watchlist?')) {
+                    await deleteDoc(doc(db, "artifacts", appId, "users", currentUserId, "watchlist", id));
+                }
+            }
+        });
+
+        function calculatePL(trade) {
+            if (trade.exitPrice === null || trade.exitPrice === undefined) {
+                return { grossPL: {value: 0, display: 'Open'}, netPL: {value: 0, display: 'Open'} };
+            }
+            const totalQty = trade.lots * trade.lotSize;
+            const entryValue = trade.entryPrice * totalQty;
+            const exitValue = trade.exitPrice * totalQty;
+            let gross;
+            if (trade.type === 'buy') { // Long
+                gross = exitValue - entryValue;
+            } else { // Short
+                gross = entryValue - exitValue;
+            }
+            const net = gross - (trade.brokerage || 0);
+            const format = (val) => `${val >= 0 ? '+' : ''}₹${val.toFixed(2)}`;
+            return {
+                grossPL: { value: gross, display: format(gross) },
+                netPL: { value: net, display: format(net) }
+            };
+        }
+
+        function updateDashboardStats(trades) {
+            const closedTrades = trades.filter(t => t.exitPrice !== null && t.exitPrice !== undefined);
+            const results = closedTrades.map(calculatePL);
+            
+            const total = trades.length;
+            const winningTrades = results.filter(r => r.netPL.value > 0).length;
+            const winRate = closedTrades.length > 0 ? (winningTrades / closedTrades.length) * 100 : 0;
+            
+            const totalGrossPL = results.reduce((sum, r) => sum + r.grossPL.value, 0);
+            const totalNetPL = results.reduce((sum, r) => sum + r.netPL.value, 0);
+
+            totalTradesEl.textContent = total;
+            winRateEl.textContent = `${winRate.toFixed(1)}%`;
+            
+            grossPlEl.textContent = `₹${totalGrossPL.toFixed(2)}`;
+            grossPlEl.className = `text-3xl font-bold mt-2 ${totalGrossPL >= 0 ? 'text-green-600' : 'text-red-600'}`;
+
+            netPlEl.textContent = `₹${totalNetPL.toFixed(2)}`;
+            netPlEl.className = `text-3xl font-bold mt-2 ${totalNetPL >= 0 ? 'text-green-600' : 'text-red-600'}`;
+        }
+        
+        onAuthStateChanged(auth, auth.currentUser);
+    </script>
+</body>
+</html>
