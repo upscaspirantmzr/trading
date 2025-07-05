@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js for better charts -->
     <style>
         /* Base styles */
         body {
@@ -114,6 +113,23 @@
         #mobile-menu-overlay.active {
             display: block;
         }
+
+        /* Custom table styling for better separation and hover */
+        .trade-table-row {
+            border-bottom: 1px solid #e5e7eb; /* Light gray border */
+        }
+        html.dark .trade-table-row {
+            border-bottom: 1px solid #4a5568; /* Darker border for dark mode */
+        }
+        .trade-table-row:last-child {
+            border-bottom: none; /* No border on the last row */
+        }
+        .trade-table-row:hover {
+            background-color: #f9fafb; /* Light hover effect */
+        }
+        html.dark .trade-table-row:hover {
+            background-color: #4a5568; /* Darker hover effect */
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -213,49 +229,6 @@
                             <span>Download Excel</span>
                         </button>
                     </div>
-
-                    <!-- New Dashboard Features -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-                        <!-- Trade Distribution Charts -->
-                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
-                            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Trade Distribution</h3>
-                            <div class="flex flex-col md:flex-row gap-4">
-                                <div class="flex-1">
-                                    <h4 class="text-md font-semibold mb-2 text-gray-800 dark:text-gray-200">By Instrument</h4>
-                                    <canvas id="instrument-chart" class="w-full h-48"></canvas>
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-md font-semibold mb-2 text-gray-800 dark:text-gray-200">By Trade Type</h4>
-                                    <canvas id="type-chart" class="w-full h-48"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- P/L by Month/Year Chart -->
-                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
-                            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">P/L Over Time</h3>
-                            <canvas id="pl-time-chart" class="w-full h-64"></canvas>
-                        </div>
-
-                        <!-- Best/Worst Trades -->
-                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
-                            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Top/Bottom Trades</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <h4 class="text-md font-semibold mb-2 text-gray-800 dark:text-gray-200">Best Trades (Net P/L)</h4>
-                                    <ul id="best-trades-list" class="space-y-2">
-                                        <li class="text-gray-600 dark:text-gray-400">No best trades yet.</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h4 class="text-md font-semibold mb-2 text-gray-800 dark:text-gray-200">Worst Trades (Net P/L)</h4>
-                                    <ul id="worst-trades-list" class="space-y-2">
-                                        <li class="text-gray-600 dark:text-gray-400">No worst trades yet.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </section>
 
                 <!-- Trades Section -->
@@ -342,6 +315,7 @@
         <form id="trade-form" class="p-6">
             <h3 id="modal-title" class="text-xl font-bold mb-6 text-gray-900 dark:text-gray-100">Log New Trade</h3>
             <input type="hidden" id="trade-id">
+
             <div class="form-section-grid mb-4">
                 <div><label for="scrip" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Scrip/Symbol</label><input type="text" id="scrip" placeholder="e.g., NIFTY" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
                 <div><label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label><input type="date" id="date" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
@@ -367,6 +341,7 @@
                 <label for="notes" class="mt-4 block text-sm font-medium text-gray-700 dark:text-gray-300">Notes / Learnings</label>
                 <textarea id="notes" rows="3" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"></textarea>
             </div>
+
             <div class="flex justify-end space-x-3"><button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-700">Cancel</button><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Save Trade</button></div>
         </form>
     </div>
@@ -389,21 +364,19 @@
         import { getFirestore, doc, collection, addDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, setDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables for Firebase configuration, app ID, and authentication token
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config)
-            : {
-                apiKey: "AIzaSyAqY_XWGzPEdqKqjyTHE0KJyYhzg0yMdTQ",
-  authDomain: "mzrtrade-journal.firebaseapp.com",
-  projectId: "mzrtrade-journal",
-  storageBucket: "mzrtrade-journal.firebasestorage.app",
-  messagingSenderId: "297165567168",
-  appId: "1:297165567168:web:f8ee32f9ee27d672a5a925",
-            };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqY_XWGzPEdqKqjyTHE0KJyYhzg0yMdTQ",
+            authDomain: "mzrtrade-journal.firebaseapp.com",
+            projectId: "mzrtrade-journal",
+            storageBucket: "mzrtrade-journal.firebasestorage.app",
+            messagingSenderId: "297165567168",
+            appId: "1:297165567168:web:f8ee32f9ee27d672a5a925"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'fno-journal-default';
+        const appId = firebaseConfig.projectId; // Using projectId as appId for consistency with previous logic
 
         let currentUserId = null;
         let tradesUnsubscribe = null;
@@ -412,18 +385,13 @@
         let currentSortColumn = 'date'; // Default sort column
         let currentSortDirection = 'desc'; // Default sort direction
 
-        // Chart instances
-        let instrumentChartInstance = null;
-        let typeChartInstance = null;
-        let plTimeChartInstance = null;
-
         // DOM Elements
         const htmlElement = document.documentElement;
         const themeToggle = document.getElementById('theme-toggle');
         const authSection = document.getElementById('auth-section');
         const appContent = document.getElementById('app-content');
         const authContainer = document.getElementById('auth-container');
-        const desktopNavLinks = document.getElementById('desktop-nav-links'); // Renamed
+        const desktopNavLinks = document.getElementById('desktop-nav-links');
         const loginForm = document.getElementById('login-form');
         const loginError = document.getElementById('login-error');
         
@@ -449,14 +417,9 @@
         const exportPdfBtn = document.getElementById('export-pdf-btn');
         const exportExcelBtn = document.getElementById('export-excel-btn');
 
-        // Chart Canvases
-        const instrumentChartCanvas = document.getElementById('instrument-chart');
-        const typeChartCanvas = document.getElementById('type-chart');
-        const plTimeChartCanvas = document.getElementById('pl-time-chart'); // New chart canvas
-
-        // Best/Worst Trades Lists
-        const bestTradesList = document.getElementById('best-trades-list');
-        const worstTradesList = document.getElementById('worst-trades-list');
+        // Best/Worst Trades Lists (removed from HTML, but keeping variables for now if needed later)
+        // const bestTradesList = document.getElementById('best-trades-list');
+        // const worstTradesList = document.getElementById('worst-trades-list');
 
         // Filter Elements
         const filterScripInput = document.getElementById('filter-scrip');
@@ -495,10 +458,6 @@
                 localStorage.setItem('theme', 'dark');
             } else {
                 localStorage.setItem('theme', 'light');
-            }
-            // Redraw charts if they exist to update colors
-            if (allTradesData.length > 0) {
-                drawCharts(allTradesData);
             }
         });
 
@@ -616,11 +575,6 @@
             tradesTableBody.innerHTML = '';
             watchlistItems.innerHTML = '';
             updateDashboardStats([]);
-            // Destroy chart instances when logged out
-            if (instrumentChartInstance) instrumentChartInstance.destroy();
-            if (typeChartInstance) typeChartInstance.destroy();
-            if (plTimeChartInstance) plTimeChartInstance.destroy();
-            displayBestWorstTrades([]); // Clear best/worst lists
         }
 
         async function setupListeners(userId) {
@@ -631,8 +585,6 @@
                 allTradesData = trades; // Store trades for export and dashboard features
                 renderTrades(trades); // Render with current filters and sort
                 updateDashboardStats(trades);
-                drawCharts(trades);
-                displayBestWorstTrades(trades);
             }, error => console.error("Error fetching trades:", error));
 
             const watchlistRef = collection(db, "artifacts", appId, "users", userId, "watchlist");
@@ -697,7 +649,7 @@
                     const plColor = netPL.value > 0 ? 'text-green-600' : (netPL.value < 0 ? 'text-red-600' : 'text-yellow-500'); // Added yellow for 0 P/L
                     const typeClass = trade.type === 'buy' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
                     const row = `
-                        <tr class="bg-white border-b hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                        <tr class="trade-table-row bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700">
                             <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">${getScripDisplayName(trade)}</td>
                             <td class="px-6 py-4">${trade.date}</td>
                             <td class="px-6 py-4">${trade.strategy || 'N/A'}</td>
@@ -781,6 +733,7 @@
             tradeForm.reset();
             document.getElementById('trade-id').value = id || '';
             modalTitle.textContent = id ? 'Edit Trade' : 'Log New Trade';
+            
             if (id) {
                 document.getElementById('scrip').value = trade.scrip; document.getElementById('date').value = trade.date;
                 document.getElementById('instrument').value = trade.instrument; document.getElementById('strikePrice').value = trade.strikePrice || '';
@@ -892,185 +845,6 @@
             setPLEl(grossPlEl, totalGrossPL);
             setPLEl(netPlEl, totalNetPL);
         }
-
-        // --- Chart Drawing Functions (using Chart.js) ---
-        function drawCharts(trades) {
-            const closedTrades = trades.filter(t => t.exitPrice !== null && t.exitPrice !== undefined);
-            const isDarkMode = htmlElement.classList.contains('dark');
-            const textColor = isDarkMode ? '#e2e8f0' : '#374151'; // gray-200 or gray-800
-            const gridColor = isDarkMode ? 'rgba(113, 128, 147, 0.2)' : 'rgba(209, 213, 219, 0.5)'; // gray-500 with opacity or gray-300 with opacity
-
-            // Destroy existing chart instances before redrawing
-            if (instrumentChartInstance) instrumentChartInstance.destroy();
-            if (typeChartInstance) typeChartInstance.destroy();
-            if (plTimeChartInstance) plTimeChartInstance.destroy();
-
-            // Instrument Distribution
-            const instrumentCounts = closedTrades.reduce((acc, trade) => {
-                acc[trade.instrument] = (acc[trade.instrument] || 0) + 1;
-                return acc;
-            }, {});
-            const instrumentLabels = Object.keys(instrumentCounts).map(label => label.charAt(0).toUpperCase() + label.slice(1));
-            const instrumentData = Object.values(instrumentCounts);
-
-            instrumentChartInstance = new Chart(instrumentChartCanvas, {
-                type: 'pie',
-                data: {
-                    labels: instrumentLabels,
-                    datasets: [{
-                        data: instrumentData,
-                        backgroundColor: [
-                            'rgb(66, 153, 225)', // blue-500
-                            'rgb(160, 174, 192)' // gray-400
-                        ],
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: textColor
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Trade Type Distribution
-            const typeCounts = closedTrades.reduce((acc, trade) => {
-                acc[trade.type] = (acc[trade.type] || 0) + 1;
-                return acc;
-            }, {});
-            const typeLabels = Object.keys(typeCounts).map(label => label.charAt(0).toUpperCase() + label.slice(1));
-            const typeData = Object.values(typeCounts);
-
-            typeChartInstance = new Chart(typeChartCanvas, {
-                type: 'pie',
-                data: {
-                    labels: typeLabels,
-                    datasets: [{
-                        data: typeData,
-                        backgroundColor: [
-                            'rgb(72, 187, 120)', // green-500
-                            'rgb(252, 129, 129)' // red-400
-                        ],
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: textColor
-                            }
-                        }
-                    }
-                }
-            });
-
-            // P/L Over Time (Monthly/Yearly)
-            const monthlyPL = closedTrades.reduce((acc, trade) => {
-                const date = new Date(trade.date);
-                const yearMonth = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
-                const netPL = calculatePL(trade).netPL.value;
-                acc[yearMonth] = (acc[yearMonth] || 0) + netPL;
-                return acc;
-            }, {});
-
-            const sortedMonths = Object.keys(monthlyPL).sort();
-            const plData = sortedMonths.map(month => monthlyPL[month]);
-
-            plTimeChartInstance = new Chart(plTimeChartCanvas, {
-                type: 'line',
-                data: {
-                    labels: sortedMonths,
-                    datasets: [{
-                        label: 'Net P/L',
-                        data: plData,
-                        borderColor: 'rgb(99, 179, 237)', // blue-300
-                        backgroundColor: 'rgba(99, 179, 237, 0.2)',
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: textColor
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: {
-                                color: textColor
-                            },
-                            grid: {
-                                color: gridColor
-                            }
-                        },
-                        y: {
-                            ticks: {
-                                color: textColor
-                            },
-                            grid: {
-                                color: gridColor
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // --- Best/Worst Trades Display ---
-        function displayBestWorstTrades(trades) {
-            const closedTrades = trades.filter(t => t.exitPrice !== null && t.exitPrice !== undefined);
-            const tradesWithPL = closedTrades.map(trade => ({
-                ...trade,
-                netPLValue: calculatePL(trade).netPL.value,
-                netPLDisplay: calculatePL(trade).netPL.display
-            }));
-
-            // Sort by net P/L
-            const sortedTrades = [...tradesWithPL].sort((a, b) => b.netPLValue - a.netPLValue);
-
-            // Best Trades (top 3 positive P/L)
-            const bestTrades = sortedTrades.filter(t => t.netPLValue > 0).slice(0, 3);
-            bestTradesList.innerHTML = '';
-            if (bestTrades.length > 0) {
-                bestTrades.forEach(trade => {
-                    const li = document.createElement('li');
-                    li.className = 'text-green-600 dark:text-green-400';
-                    li.innerHTML = `<span class="font-semibold">${getScripDisplayName(trade)}</span>: ${trade.netPLDisplay}`;
-                    bestTradesList.appendChild(li);
-                });
-            } else {
-                bestTradesList.innerHTML = '<li class="text-gray-600 dark:text-gray-400">No best trades yet.</li>';
-            }
-
-            // Worst Trades (top 3 negative P/L)
-            const worstTrades = sortedTrades.filter(t => t.netPLValue < 0).slice(-3).reverse(); // Get last 3 negative and reverse to show worst first
-            worstTradesList.innerHTML = '';
-            if (worstTrades.length > 0) {
-                worstTrades.forEach(trade => {
-                    const li = document.createElement('li');
-                    li.className = 'text-red-600 dark:text-red-400';
-                    li.innerHTML = `<span class="font-semibold">${getScripDisplayName(trade)}</span>: ${trade.netPLDisplay}`;
-                    worstTradesList.appendChild(li);
-                });
-            } else {
-                worstTradesList.innerHTML = '<li class="text-gray-600 dark:text-gray-400">No worst trades yet.</li>';
-            }
-        }
-
 
         // --- Export Functionality ---
 
