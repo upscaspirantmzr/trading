@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js for better charts -->
     <style>
         /* Base styles */
         body {
@@ -39,6 +40,7 @@
         .hover\:bg-red-600:hover { background-color: #dc2626; }
         .text-green-600 { color: #16a34a; }
         .text-red-600 { color: #dc2626; }
+        .text-yellow-500 { color: #f59e0b; } /* For neutral/open P/L */
 
 
         /* Dark Theme */
@@ -68,6 +70,11 @@
         html.dark .hover\:bg-gray-50:hover { background-color: #4a5568; } /* Table row hover */
         html.dark .hover\:bg-gray-300:hover { background-color: #6b7280; } /* Cancel button hover */
         html.dark .modal { background-color: #2d3748; }
+        html.dark .bg-green-100 { background-color: #1f2d3d; } /* Darker green for type tag */
+        html.dark .text-green-800 { color: #68d391; } /* Lighter green for type tag */
+        html.dark .bg-red-100 { background-color: #2d1f1f; } /* Darker red for type tag */
+        html.dark .text-red-800 { color: #fc8181; } /* Lighter red for type tag */
+
 
         /* General Modal Styles (retained from previous version) */
         .modal-backdrop {
@@ -96,6 +103,17 @@
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
         }
+
+        /* Mobile Menu Specific Styles */
+        #mobile-menu {
+            transform: translateX(100%); /* Start off-screen */
+        }
+        #mobile-menu.active {
+            transform: translateX(0); /* Slide in */
+        }
+        #mobile-menu-overlay.active {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -104,16 +122,17 @@
     <div id="app" class="min-h-screen flex flex-col">
 
         <!-- Header -->
-        <header class="bg-white shadow-md sticky top-0 z-30">
+        <header class="bg-white shadow-md sticky top-0 z-30 dark:bg-gray-900">
             <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <i class="fas fa-chart-line text-2xl text-blue-600"></i>
-                    <h1 class="text-xl font-bold text-gray-900">F&O TradeJournal</h1>
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">F&O TradeJournal</h1>
                 </div>
-                <div id="nav-links" class="hidden md:flex items-center space-x-6">
-                    <a href="#dashboard" class="nav-link text-gray-600 hover:text-blue-600">Dashboard</a>
-                    <a href="#trades" class="nav-link text-gray-600 hover:text-blue-600">Trades</a>
-                    <a href="#watchlist" class="nav-link text-gray-600 hover:text-blue-600">Watchlist</a>
+                <!-- Desktop Navigation Links -->
+                <div id="desktop-nav-links" class="hidden md:flex items-center space-x-6">
+                    <a href="#dashboard" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Dashboard</a>
+                    <a href="#trades" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Trades</a>
+                    <a href="#watchlist" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Watchlist</a>
                 </div>
                 <div class="flex items-center space-x-4">
                      <button id="theme-toggle" class="p-2 rounded-full text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 transition">
@@ -123,16 +142,39 @@
                      <div id="auth-container">
                         <!-- Auth buttons will be injected here -->
                     </div>
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 rounded-full text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 transition">
+                        <i class="fas fa-bars"></i>
+                    </button>
                 </div>
             </nav>
         </header>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
+        <div id="mobile-menu" class="fixed top-0 right-0 w-64 h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out dark:bg-gray-900 md:hidden">
+            <div class="flex justify-end p-4">
+                <button id="mobile-menu-close-button" class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <nav class="flex flex-col p-4 space-y-4">
+                <a href="#dashboard" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Dashboard</a>
+                <a href="#trades" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Trades</a>
+                <a href="#watchlist" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Watchlist</a>
+                <hr class="border-gray-200 dark:border-gray-700">
+                <div id="mobile-auth-container" class="flex flex-col space-y-4">
+                    <!-- Auth buttons will be cloned/injected here for mobile -->
+                </div>
+            </nav>
+        </div>
 
         <!-- Main Content -->
         <main class="flex-grow container mx-auto p-4 md:p-6">
             
             <!-- Auth Section -->
             <div id="auth-section">
-                <div class="max-w-md mx-auto mt-10 bg-white p-8 rounded-xl shadow-lg">
+                <div class="max-w-md mx-auto mt-10 bg-white p-8 rounded-xl shadow-lg dark:bg-gray-800">
                     <h2 class="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Login to Your Journal</h2>
                     <form id="login-form">
                         <div class="mb-4">
@@ -187,6 +229,12 @@
                                     <canvas id="type-chart" class="w-full h-48"></canvas>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- P/L by Month/Year Chart -->
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800">
+                            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">P/L Over Time</h3>
+                            <canvas id="pl-time-chart" class="w-full h-64"></canvas>
                         </div>
 
                         <!-- Best/Worst Trades -->
@@ -254,11 +302,11 @@
                         <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                                 <tr>
-                                    <th class="px-6 py-3">Scrip</th>
-                                    <th class="px-6 py-3">Date</th>
-                                    <th class="px-6 py-3">Setup/Strategy</th>
-                                    <th class="px-6 py-3">Type</th>
-                                    <th class="px-6 py-3">Net P/L</th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="scrip">Scrip <i class="fas fa-sort text-xs ml-1"></i></th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="date">Date <i class="fas fa-sort text-xs ml-1"></i></th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="strategy">Setup/Strategy <i class="fas fa-sort text-xs ml-1"></i></th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="type">Type <i class="fas fa-sort text-xs ml-1"></i></th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="netPLValue">Net P/L <i class="fas fa-sort text-xs ml-1"></i></th>
                                     <th class="px-6 py-3">Actions</th>
                                 </tr>
                             </thead>
@@ -272,8 +320,9 @@
                 <section id="watchlist">
                      <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Watchlist</h2>
                      <div class="bg-white p-4 rounded-lg shadow dark:bg-gray-800">
-                        <form id="add-watchlist-form" class="flex items-center space-x-2 mb-4">
+                        <form id="add-watchlist-form" class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
                             <input type="text" id="watchlist-symbol" placeholder="Add Scrip (e.g., NIFTY, RELIANCE)" class="flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required>
+                            <input type="text" id="watchlist-notes" placeholder="Notes (e.g., 'Track for breakout')" class="flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Add</button>
                         </form>
                         <div id="watchlist-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
@@ -343,7 +392,6 @@
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config)
             : {
-                // Default Firebase config (replace with your actual project config if needed)
                 apiKey: "AIzaSyAqY_XWGzPEdqKqjyTHE0KJyYhzg0yMdTQ",
   authDomain: "mzrtrade-journal.firebaseapp.com",
   projectId: "mzrtrade-journal",
@@ -361,6 +409,13 @@
         let tradesUnsubscribe = null;
         let watchlistUnsubscribe = null;
         let allTradesData = []; // Store all trades for export and dashboard features
+        let currentSortColumn = 'date'; // Default sort column
+        let currentSortDirection = 'desc'; // Default sort direction
+
+        // Chart instances
+        let instrumentChartInstance = null;
+        let typeChartInstance = null;
+        let plTimeChartInstance = null;
 
         // DOM Elements
         const htmlElement = document.documentElement;
@@ -368,7 +423,7 @@
         const authSection = document.getElementById('auth-section');
         const appContent = document.getElementById('app-content');
         const authContainer = document.getElementById('auth-container');
-        const navLinks = document.getElementById('nav-links');
+        const desktopNavLinks = document.getElementById('desktop-nav-links'); // Renamed
         const loginForm = document.getElementById('login-form');
         const loginError = document.getElementById('login-error');
         
@@ -397,6 +452,7 @@
         // Chart Canvases
         const instrumentChartCanvas = document.getElementById('instrument-chart');
         const typeChartCanvas = document.getElementById('type-chart');
+        const plTimeChartCanvas = document.getElementById('pl-time-chart'); // New chart canvas
 
         // Best/Worst Trades Lists
         const bestTradesList = document.getElementById('best-trades-list');
@@ -416,6 +472,15 @@
         const customAlertMessage = document.getElementById('custom-alert-message');
         const customAlertOkBtn = document.getElementById('custom-alert-ok');
         const customAlertCancelBtn = document.getElementById('custom-alert-cancel');
+
+        // Mobile Menu Elements
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuCloseButton = document.getElementById('mobile-menu-close-button');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        const mobileAuthContainer = document.getElementById('mobile-auth-container');
+
 
         // --- Theme Toggle Logic ---
         // Check local storage for theme preference
@@ -472,6 +537,35 @@
             customAlertModalBackdrop.onclick = null;
         }
 
+        // --- Mobile Menu Logic ---
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            // Clone auth container content to mobile menu
+            mobileAuthContainer.innerHTML = authContainer.innerHTML;
+            const mobileLogoutBtn = mobileAuthContainer.querySelector('#logout-btn');
+            if (mobileLogoutBtn) {
+                mobileLogoutBtn.addEventListener('click', logOut);
+            }
+        });
+
+        mobileMenuCloseButton.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+        });
+
+        mobileMenuOverlay.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+        });
+
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+            });
+        });
+
         // --- Authentication Logic ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -509,7 +603,7 @@
         function updateUIForUser() {
             authSection.style.display = 'none';
             appContent.classList.remove('hidden');
-            navLinks.classList.remove('hidden');
+            desktopNavLinks.classList.remove('hidden'); // Ensure desktop nav is visible
             authContainer.innerHTML = `<button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition">Logout</button>`;
             document.getElementById('logout-btn').addEventListener('click', logOut);
         }
@@ -517,14 +611,16 @@
         function updateUIForGuest() {
             authSection.style.display = 'block';
             appContent.classList.add('hidden');
-            navLinks.classList.add('hidden');
+            desktopNavLinks.classList.add('hidden'); // Hide desktop nav
             authContainer.innerHTML = '';
             tradesTableBody.innerHTML = '';
             watchlistItems.innerHTML = '';
             updateDashboardStats([]);
-            // Clear charts and best/worst lists when logged out
-            drawCharts([]);
-            displayBestWorstTrades([]);
+            // Destroy chart instances when logged out
+            if (instrumentChartInstance) instrumentChartInstance.destroy();
+            if (typeChartInstance) typeChartInstance.destroy();
+            if (plTimeChartInstance) plTimeChartInstance.destroy();
+            displayBestWorstTrades([]); // Clear best/worst lists
         }
 
         async function setupListeners(userId) {
@@ -533,7 +629,7 @@
             tradesUnsubscribe = onSnapshot(tradesRef, (snapshot) => {
                 const trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 allTradesData = trades; // Store trades for export and dashboard features
-                renderTrades(trades); // Render with no filters initially
+                renderTrades(trades); // Render with current filters and sort
                 updateDashboardStats(trades);
                 drawCharts(trades);
                 displayBestWorstTrades(trades);
@@ -554,7 +650,7 @@
         // --- Trade Logging and Display ---
         function getScripDisplayName(trade) {
             let name = trade.scrip.toUpperCase();
-            if (trade.instrument === 'options') {
+            if (trade.instrument === 'options' && trade.strikePrice && trade.optionType) {
                 name += ` ${trade.strikePrice} ${trade.optionType}`;
             }
             return name;
@@ -563,21 +659,42 @@
         function renderTrades(trades) {
             tradesTableBody.innerHTML = '';
             
-            // Apply filters before rendering
-            const filteredTrades = trades.filter(trade => {
+            // Apply filters
+            let filteredTrades = trades.filter(trade => {
                 const scripMatch = filterScripInput.value ? trade.scrip.toLowerCase().includes(filterScripInput.value.toLowerCase()) : true;
                 const instrumentMatch = filterInstrumentSelect.value ? trade.instrument === filterInstrumentSelect.value : true;
                 const typeMatch = filterTypeSelect.value ? trade.type === filterTypeSelect.value : true;
                 return scripMatch && instrumentMatch && typeMatch;
             });
 
+            // Add netPLValue for sorting purposes
+            filteredTrades = filteredTrades.map(trade => ({
+                ...trade,
+                netPLValue: calculatePL(trade).netPL.value
+            }));
+
+            // Apply sorting
+            filteredTrades.sort((a, b) => {
+                let valA = a[currentSortColumn];
+                let valB = b[currentSortColumn];
+
+                // Handle string comparisons for non-numeric columns
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+
+                if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
             noTradesMessage.classList.toggle('hidden', filteredTrades.length > 0);
 
             if (filteredTrades.length > 0) {
-                filteredTrades.sort((a, b) => new Date(b.date) - new Date(a.date));
                 filteredTrades.forEach(trade => {
                     const { netPL } = calculatePL(trade);
-                    const plColor = netPL.value >= 0 ? 'text-green-600' : 'text-red-600';
+                    const plColor = netPL.value > 0 ? 'text-green-600' : (netPL.value < 0 ? 'text-red-600' : 'text-yellow-500'); // Added yellow for 0 P/L
                     const typeClass = trade.type === 'buy' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
                     const row = `
                         <tr class="bg-white border-b hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
@@ -596,6 +713,21 @@
                 });
             }
         }
+
+        // Event listener for table header sorting
+        document.querySelectorAll('#trades thead th[data-sort]').forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.dataset.sort;
+                if (currentSortColumn === column) {
+                    currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSortColumn = column;
+                    currentSortDirection = 'asc'; // Default to ascending for new column
+                }
+                renderTrades(allTradesData); // Re-render with new sort
+            });
+        });
+
 
         tradeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -692,7 +824,7 @@
             noWatchlistMessage.classList.toggle('hidden', items.length > 0);
             if (items.length > 0) {
                 items.forEach(item => {
-                    watchlistItems.innerHTML += `<div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm dark:bg-gray-700 dark:text-gray-100"><span class="font-bold text-gray-800 dark:text-gray-200">${item.symbol.toUpperCase()}</span><button class="delete-watchlist-btn text-gray-400 hover:text-red-500" data-id="${item.id}">&times;</button></div>`;
+                    watchlistItems.innerHTML += `<div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm dark:bg-gray-700 dark:text-gray-100"><span class="font-bold text-gray-800 dark:text-gray-200">${item.symbol.toUpperCase()}</span><span class="text-sm text-gray-600 dark:text-gray-300">${item.notes || ''}</span><button class="delete-watchlist-btn text-gray-400 hover:text-red-500" data-id="${item.id}">&times;</button></div>`;
                 });
             }
         }
@@ -701,11 +833,15 @@
             e.preventDefault();
             if (!currentUserId) return;
             const symbolInput = document.getElementById('watchlist-symbol');
+            const notesInput = document.getElementById('watchlist-notes'); // New notes input
             const symbol = symbolInput.value.trim().toUpperCase();
+            const notes = notesInput.value.trim();
+
             if (symbol) {
                 try {
-                    await setDoc(doc(db, "artifacts", appId, "users", currentUserId, "watchlist", symbol), { symbol: symbol });
+                    await setDoc(doc(db, "artifacts", appId, "users", currentUserId, "watchlist", symbol), { symbol: symbol, notes: notes });
                     symbolInput.value = '';
+                    notesInput.value = '';
                 } catch (error) { console.error("Error adding to watchlist:", error); }
             }
         });
@@ -757,74 +893,141 @@
             setPLEl(netPlEl, totalNetPL);
         }
 
-        // --- Chart Drawing Functions ---
+        // --- Chart Drawing Functions (using Chart.js) ---
         function drawCharts(trades) {
-            // Clear previous charts
-            const ctxInstrument = instrumentChartCanvas.getContext('2d');
-            const ctxType = typeChartCanvas.getContext('2d');
-            ctxInstrument.clearRect(0, 0, instrumentChartCanvas.width, instrumentChartCanvas.height);
-            ctxType.clearRect(0, 0, typeChartCanvas.width, typeChartCanvas.height);
+            const closedTrades = trades.filter(t => t.exitPrice !== null && t.exitPrice !== undefined);
+            const isDarkMode = htmlElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#e2e8f0' : '#374151'; // gray-200 or gray-800
+            const gridColor = isDarkMode ? 'rgba(113, 128, 147, 0.2)' : 'rgba(209, 213, 219, 0.5)'; // gray-500 with opacity or gray-300 with opacity
 
-            if (trades.length === 0) {
-                return; // No data to draw charts
-            }
+            // Destroy existing chart instances before redrawing
+            if (instrumentChartInstance) instrumentChartInstance.destroy();
+            if (typeChartInstance) typeChartInstance.destroy();
+            if (plTimeChartInstance) plTimeChartInstance.destroy();
 
             // Instrument Distribution
-            const instrumentCounts = trades.reduce((acc, trade) => {
+            const instrumentCounts = closedTrades.reduce((acc, trade) => {
                 acc[trade.instrument] = (acc[trade.instrument] || 0) + 1;
                 return acc;
             }, {});
-            const instrumentLabels = Object.keys(instrumentCounts);
+            const instrumentLabels = Object.keys(instrumentCounts).map(label => label.charAt(0).toUpperCase() + label.slice(1));
             const instrumentData = Object.values(instrumentCounts);
 
+            instrumentChartInstance = new Chart(instrumentChartCanvas, {
+                type: 'pie',
+                data: {
+                    labels: instrumentLabels,
+                    datasets: [{
+                        data: instrumentData,
+                        backgroundColor: [
+                            'rgb(66, 153, 225)', // blue-500
+                            'rgb(160, 174, 192)' // gray-400
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    }
+                }
+            });
+
             // Trade Type Distribution
-            const typeCounts = trades.reduce((acc, trade) => {
+            const typeCounts = closedTrades.reduce((acc, trade) => {
                 acc[trade.type] = (acc[trade.type] || 0) + 1;
                 return acc;
             }, {});
-            const typeLabels = Object.keys(typeCounts);
+            const typeLabels = Object.keys(typeCounts).map(label => label.charAt(0).toUpperCase() + label.slice(1));
             const typeData = Object.values(typeCounts);
 
-            const isDarkMode = htmlElement.classList.contains('dark');
-            const textColor = isDarkMode ? '#e2e8f0' : '#374151'; // gray-200 or gray-800
-            const backgroundColor = isDarkMode ? ['#4299e1', '#a0aec0'] : ['#3182ce', '#a0aec0']; // blue-500, gray-400
+            typeChartInstance = new Chart(typeChartCanvas, {
+                type: 'pie',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeData,
+                        backgroundColor: [
+                            'rgb(72, 187, 120)', // green-500
+                            'rgb(252, 129, 129)' // red-400
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    }
+                }
+            });
 
-            // Helper to draw a pie chart
-            function drawPieChart(ctx, data, labels, colors) {
-                const total = data.reduce((sum, val) => sum + val, 0);
-                let startAngle = 0;
-                const centerX = ctx.canvas.width / 2;
-                const centerY = ctx.canvas.height / 2;
-                const radius = Math.min(centerX, centerY) * 0.7;
+            // P/L Over Time (Monthly/Yearly)
+            const monthlyPL = closedTrades.reduce((acc, trade) => {
+                const date = new Date(trade.date);
+                const yearMonth = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                const netPL = calculatePL(trade).netPL.value;
+                acc[yearMonth] = (acc[yearMonth] || 0) + netPL;
+                return acc;
+            }, {});
 
-                data.forEach((value, i) => {
-                    const sliceAngle = (value / total) * 2 * Math.PI;
-                    const endAngle = startAngle + sliceAngle;
+            const sortedMonths = Object.keys(monthlyPL).sort();
+            const plData = sortedMonths.map(month => monthlyPL[month]);
 
-                    ctx.beginPath();
-                    ctx.moveTo(centerX, centerY);
-                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                    ctx.closePath();
-                    ctx.fillStyle = colors[i % colors.length];
-                    ctx.fill();
-
-                    // Draw labels
-                    const midAngle = startAngle + sliceAngle / 2;
-                    const labelX = centerX + radius * 0.8 * Math.cos(midAngle);
-                    const labelY = centerY + radius * 0.8 * Math.sin(midAngle);
-                    ctx.fillStyle = textColor;
-                    ctx.font = '10px Inter';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                    ctx.fillText(`${labels[i]} (${percentage}%)`, labelX, labelY);
-
-                    startAngle = endAngle;
-                });
-            }
-
-            drawPieChart(ctxInstrument, instrumentData, instrumentLabels, ['#4299e1', '#a0aec0']); // blue-500, gray-400
-            drawPieChart(ctxType, typeData, typeLabels, ['#48bb78', '#fc8181']); // green-500, red-400
+            plTimeChartInstance = new Chart(plTimeChartCanvas, {
+                type: 'line',
+                data: {
+                    labels: sortedMonths,
+                    datasets: [{
+                        label: 'Net P/L',
+                        data: plData,
+                        borderColor: 'rgb(99, 179, 237)', // blue-300
+                        backgroundColor: 'rgba(99, 179, 237, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: textColor
+                            },
+                            grid: {
+                                color: gridColor
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: textColor
+                            },
+                            grid: {
+                                color: gridColor
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         // --- Best/Worst Trades Display ---
