@@ -10,9 +10,72 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <style>
+        /* Base styles */
         body {
             font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        /* Light Theme (default) */
+        body {
+            background-color: #f3f4f6; /* gray-100 */
+            color: #374151; /* gray-800 */
+        }
+        .bg-white { background-color: #ffffff; }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .text-gray-900 { color: #111827; }
+        .text-gray-800 { color: #374151; }
+        .text-gray-700 { color: #4b5563; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-500 { color: #6b7280; }
+        .border { border-color: #d1d5db; } /* gray-300 */
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
+        .hover\:bg-gray-300:hover { background-color: #d1d5db; }
+        .text-blue-600 { color: #2563eb; }
+        .text-blue-900 { color: #1e3a8a; }
+        .bg-red-500 { background-color: #ef4444; }
+        .hover\:bg-red-600:hover { background-color: #dc2626; }
+        .text-green-600 { color: #16a34a; }
+        .text-red-600 { color: #dc2626; }
+        .text-yellow-500 { color: #f59e0b; } /* For neutral/open P/L */
+
+
+        /* Dark Theme */
+        html.dark body {
+            background-color: #1a202c; /* Darker background */
+            color: #e2e8f0; /* Light text */
+        }
+        html.dark .bg-white { background-color: #2d3748; } /* Darker cards/elements */
+        html.dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2); }
+        html.dark .text-gray-900 { color: #f7fafc; }
+        html.dark .text-gray-800 { color: #e2e8f0; }
+        html.dark .text-gray-700 { color: #cbd5e0; }
+        html.dark .text-gray-600 { color: #a0aec0; }
+        html.dark .text-gray-500 { color: #718096; }
+        html.dark .border { border-color: #4a5568; } /* Darker borders */
+        html.dark input, html.dark select, html.dark textarea {
+            background-color: #4a5568;
+            color: #e2e8f0;
+            border-color: #6b7280;
+        }
+        html.dark input:focus, html.dark select:focus, html.dark textarea:focus {
+            border-color: #63b3ed; /* blue-300 */
+            box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.5);
+        }
+        html.dark .bg-gray-50 { background-color: #2d3748; } /* Table header */
+        html.dark .bg-gray-100 { background-color: #4a5568; } /* Watchlist item background */
+        html.dark .hover\:bg-gray-50:hover { background-color: #4a5568; } /* Table row hover */
+        html.dark .hover\:bg-gray-300:hover { background-color: #6b7280; } /* Cancel button hover */
+        html.dark .modal { background-color: #2d3748; }
+        html.dark .bg-green-100 { background-color: #1f2d3d; } /* Darker green for type tag */
+        html.dark .text-green-800 { color: #68d391; } /* Lighter green for type tag */
+        html.dark .bg-red-100 { background-color: #2d1f1f; } /* Darker red for type tag */
+        html.dark .text-red-800 { color: #fc8181; } /* Lighter red for type tag */
+
+
+        /* General Modal Styles (retained from previous version) */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -39,6 +102,63 @@
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 1rem;
         }
+
+        /* Mobile Menu Specific Styles */
+        #mobile-menu {
+            transform: translateX(100%); /* Start off-screen */
+        }
+        #mobile-menu.active {
+            transform: translateX(0); /* Slide in */
+        }
+        #mobile-menu-overlay.active {
+            display: block;
+        }
+
+        /* Custom table styling for better separation and hover */
+        .trade-table-row {
+            border-bottom: 1px solid #e5e7eb; /* Light gray border */
+        }
+        html.dark .trade-table-row {
+            border-bottom: 1px solid #4a5568; /* Darker border for dark mode */
+        }
+        .trade-table-row:last-child {
+            border-bottom: none; /* No border on the last row */
+        }
+        .trade-table-row:hover {
+            background-color: #f9fafb; /* Light hover effect */
+        }
+        html.dark .trade-table-row:hover {
+            background-color: #4a5568; /* Darker hover effect */
+        }
+
+        /* Progress Bar Styling */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e2e8f0; /* gray-200 */
+            border-radius: 9999px; /* full rounded */
+            overflow: hidden;
+        }
+        html.dark .progress-bar-container {
+            background-color: #4a5568; /* gray-700 */
+        }
+        .progress-bar {
+            height: 1.5rem; /* h-6 */
+            background-color: #2563eb; /* blue-600 */
+            border-radius: 9999px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .progress-bar.red {
+            background-color: #dc2626; /* red-600 */
+        }
+        .progress-bar.yellow {
+            background-color: #f59e0b; /* yellow-500 */
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -47,40 +167,76 @@
     <div id="app" class="min-h-screen flex flex-col">
 
         <!-- Header -->
-        <header class="bg-white shadow-md sticky top-0 z-30">
+        <header class="bg-white shadow-md sticky top-0 z-30 dark:bg-gray-900">
             <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <i class="fas fa-chart-line text-2xl text-blue-600"></i>
-                    <h1 class="text-xl font-bold text-gray-900">F&O TradeJournal</h1>
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100">F&O TradeJournal</h1>
                 </div>
-                <div id="nav-links" class="hidden md:flex items-center space-x-6">
-                    <a href="#dashboard" class="nav-link text-gray-600 hover:text-blue-600">Dashboard</a>
-                    <a href="#trades" class="nav-link text-gray-600 hover:text-blue-600">Trades</a>
-                    <a href="#watchlist" class="nav-link text-gray-600 hover:text-blue-600">Watchlist</a>
+                <!-- Desktop Navigation Links -->
+                <div id="desktop-nav-links" class="hidden md:flex items-center space-x-6">
+                    <a href="#dashboard" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Dashboard</a>
+                    <a href="#trades" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Trades</a>
+                    <a href="#trading-goals" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Goals</a>
+                    <a href="#entry-checklist" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Checklist</a>
+                    <a href="#summary-rules" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Rules</a>
+                    <a href="#issue-solutions" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Solutions</a>
+                    <a href="#watchlist" class="nav-link text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">Watchlist</a>
                 </div>
                 <div class="flex items-center space-x-4">
+                     <button id="theme-toggle" class="p-2 rounded-full text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 transition">
+                        <i class="fas fa-moon hidden dark:block"></i>
+                        <i class="fas fa-sun dark:hidden"></i>
+                    </button>
                      <div id="auth-container">
                         <!-- Auth buttons will be injected here -->
                     </div>
+                    <!-- Mobile Menu Button -->
+                    <button id="mobile-menu-button" class="md:hidden p-2 rounded-full text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 transition">
+                        <i class="fas fa-bars"></i>
+                    </button>
                 </div>
             </nav>
         </header>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
+        <div id="mobile-menu" class="fixed top-0 right-0 w-64 h-full bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out dark:bg-gray-900 md:hidden">
+            <div class="flex justify-end p-4">
+                <button id="mobile-menu-close-button" class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <nav class="flex flex-col p-4 space-y-4">
+                <a href="#dashboard" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Dashboard</a>
+                <a href="#trades" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Trades</a>
+                <a href="#trading-goals" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Goals</a>
+                <a href="#entry-checklist" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Checklist</a>
+                <a href="#summary-rules" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Rules</a>
+                <a href="#issue-solutions" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Solutions</a>
+                <a href="#watchlist" class="mobile-nav-link text-gray-800 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400 text-lg font-medium">Watchlist</a>
+                <hr class="border-gray-200 dark:border-gray-700">
+                <div id="mobile-auth-container" class="flex flex-col space-y-4">
+                    <!-- Auth buttons will be cloned/injected here for mobile -->
+                </div>
+            </nav>
+        </div>
 
         <!-- Main Content -->
         <main class="flex-grow container mx-auto p-4 md:p-6">
             
             <!-- Auth Section -->
             <div id="auth-section">
-                <div class="max-w-md mx-auto mt-10 bg-white p-8 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-bold text-center mb-6">Login to Your Journal</h2>
+                <div class="max-w-md mx-auto mt-10 bg-white p-8 rounded-xl shadow-lg dark:bg-gray-800">
+                    <h2 class="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Login to Your Journal</h2>
                     <form id="login-form">
                         <div class="mb-4">
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                            <input type="email" id="email" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                            <input type="email" id="email" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required>
                         </div>
                         <div class="mb-6">
-                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            <input type="password" id="password" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                            <input type="password" id="password" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required>
                         </div>
                         <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300">Login</button>
                     </form>
@@ -92,12 +248,12 @@
             <div id="app-content" class="hidden">
                 <!-- Dashboard Section -->
                 <section id="dashboard" class="mb-8">
-                    <h2 class="text-2xl font-bold mb-4">Performance Dashboard</h2>
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Performance Dashboard</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Total Trades</h3><p id="total-trades" class="text-3xl font-bold mt-2">0</p></div>
-                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Win Rate</h3><p id="win-rate" class="text-3xl font-bold mt-2">0%</p></div>
-                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Gross P/L</h3><p id="gross-pl" class="text-3xl font-bold mt-2 text-gray-800">₹0.00</p></div>
-                        <div class="bg-white p-6 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Net P/L (After Charges)</h3><p id="net-pl" class="text-3xl font-bold mt-2 text-gray-800">₹0.00</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800"><h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Trades</h3><p id="total-trades" class="text-3xl font-bold mt-2 text-gray-800 dark:text-gray-200">0</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800"><h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Win Rate</h3><p id="win-rate" class="text-3xl font-bold mt-2 text-gray-800 dark:text-gray-200">0%</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800"><h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Gross P/L</h3><p id="gross-pl" class="text-3xl font-bold mt-2 text-gray-800 dark:text-gray-200">₹0.00</p></div>
+                        <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800"><h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Net P/L (After Charges)</h3><p id="net-pl" class="text-3xl font-bold mt-2 text-gray-800 dark:text-gray-200">₹0.00</p></div>
                     </div>
                     <!-- Export Buttons -->
                     <div class="mt-6 flex flex-col sm:flex-row gap-4">
@@ -110,96 +266,306 @@
                             <span>Download Excel</span>
                         </button>
                     </div>
+
+                    <!-- P/L by Month/Year Chart -->
+                    <div class="bg-white p-6 rounded-lg shadow dark:bg-gray-800 mt-8">
+                        <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">P/L Over Time</h3>
+                        <canvas id="pl-time-chart" class="w-full h-64"></canvas>
+                    </div>
                 </section>
 
                 <!-- Trades Section -->
                 <section id="trades" class="mb-8">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold">Trade Log</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Trade Log</h2>
                         <button id="add-trade-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition duration-300 flex items-center space-x-2">
                             <i class="fas fa-plus"></i>
                             <span>Log Trade</span>
                         </button>
                     </div>
-                    <div class="bg-white rounded-lg shadow overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <!-- Trade Filter/Search -->
+                    <div class="bg-white p-4 rounded-lg shadow mb-4 dark:bg-gray-800">
+                        <h3 class="text-lg font-bold mb-3 text-gray-900 dark:text-gray-100">Filter Trades</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="filter-scrip" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Scrip/Symbol</label>
+                                <input type="text" id="filter-scrip" placeholder="e.g., NIFTY" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                            </div>
+                            <div>
+                                <label for="filter-instrument" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Instrument</label>
+                                <select id="filter-instrument" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                                    <option value="">All</option>
+                                    <option value="futures">Futures</option>
+                                    <option value="options">Options</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="filter-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Position Type</label>
+                                <select id="filter-type" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                                    <option value="">All</option>
+                                    <option value="buy">Long (Buy)</option>
+                                    <option value="sell">Short (Sell)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex justify-end space-x-2">
+                            <button id="apply-filters-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Apply Filters</button>
+                            <button id="clear-filters-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition duration-300 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-700">Clear Filters</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow overflow-x-auto dark:bg-gray-800">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                                 <tr>
-                                    <th class="px-6 py-3">Scrip</th>
-                                    <th class="px-6 py-3">Date</th>
-                                    <th class="px-6 py-3">Setup/Strategy</th>
-                                    <th class="px-6 py-3">Type</th>
-                                    <th class="px-6 py-3">Net P/L</th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="scrip">Scrip <i class="fas fa-sort text-xs ml-1"></i></th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="date">Date <i class="fas fa-sort text-xs ml-1"></i></th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="strategy">Setup/Strategy <i class="fas fa-sort text-xs ml-1"></i></th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="type">Type <i class="fas fa-sort text-xs ml-1"></i></th>
+                                    <th class="px-6 py-3 cursor-pointer" data-sort="netPLValue">Net P/L <i class="fas fa-sort text-xs ml-1"></i></th>
                                     <th class="px-6 py-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="trades-table-body"></tbody>
                         </table>
-                         <div id="no-trades-message" class="text-center py-8 text-gray-500 hidden"><p>No trades logged yet. Click "Log Trade" to get started!</p></div>
+                         <div id="no-trades-message" class="text-center py-8 text-gray-500 dark:text-gray-400 hidden"><p>No trades logged yet. Click "Log Trade" to get started!</p></div>
+                    </div>
+                </section>
+
+                <!-- Trading Goals Section -->
+                <section id="trading-goals" class="mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">My Trading Goals</h2>
+                    <div class="bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
+                        <form id="goals-form" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <label for="targetNetPL" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Target Net P/L (₹)</label>
+                                <input type="number" id="targetNetPL" step="any" placeholder="e.g., 50000" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                            </div>
+                            <div>
+                                <label for="targetWinRate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Target Win Rate (%)</label>
+                                <input type="number" id="targetWinRate" min="0" max="100" step="0.1" placeholder="e.g., 60.0" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                            </div>
+                            <div class="md:col-span-2 flex justify-end">
+                                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Save Goals</button>
+                            </div>
+                        </form>
+
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Net P/L Progress</h3>
+                                <div class="progress-bar-container">
+                                    <div id="netPL-progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Current: <span id="current-netPL">₹0.00</span> / Target: <span id="display-target-netPL">₹0.00</span></p>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Win Rate Progress</h3>
+                                <div class="progress-bar-container">
+                                    <div id="winRate-progress-bar" class="progress-bar" style="width: 0%;">0%</div>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Current: <span id="current-winRate">0.0%</span> / Target: <span id="display-target-winRate">0.0%</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Entry Checklist Section (Detailed) -->
+                <section id="entry-checklist" class="mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Detailed Trade Entry Checklist</h2>
+                    <div class="bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">Ensure you've considered these points before executing a trade:</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-lg"></i>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800 dark:text-gray-200">Market Trend Confirmed?</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Is the overall market (Nifty/BankNifty) trend aligned with your trade direction? Avoid counter-trend trades unless part of a specific strategy.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-lg"></i>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800 dark:text-gray-200">Strategy Rules Met?</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Have all entry conditions for your chosen strategy been satisfied? (e.g., indicator crosses, price action patterns, volume confirmation).</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-lg"></i>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800 dark:text-gray-200">Risk Defined?</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Is your Stop Loss (SL) clearly identified and acceptable for your capital? Never enter a trade without a predefined exit for loss.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-lg"></i>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800 dark:text-gray-200">Reward Potential Clear?</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Do you have a target (TP) and is the Risk-Reward Ratio favorable (e.g., 1:2 or better)?</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-lg"></i>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800 dark:text-gray-200">Position Sizing Correct?</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Is the quantity (lots) appropriate for your risk management plan, risking only a small percentage of your capital per trade?</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-lg"></i>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800 dark:text-gray-200">No Major News Events Due?</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Check for upcoming economic data, corporate earnings, or other news that could cause high volatility.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Summary Checklist of Rules -->
+                <section id="summary-rules" class="mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">My Golden Rules for Trading</h2>
+                    <div class="bg-gradient-to-br from-blue-500 to-purple-600 p-6 rounded-lg shadow-xl text-white">
+                        <p class="text-lg font-semibold mb-4">A quick reminder of my core principles:</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-center">
+                                <i class="fas fa-star text-yellow-300 mr-3 text-xl"></i>
+                                <span class="font-medium">"Trade with the trend, not against it."</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-star text-yellow-300 mr-3 text-xl"></i>
+                                <span class="font-medium">"Your Stop Loss is your best friend. Respect it."</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-star text-yellow-300 mr-3 text-xl"></i>
+                                <span class="font-medium">"Never risk more than 1-2% of capital on a single trade."</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-star text-yellow-300 mr-3 text-xl"></i>
+                                <span class="font-medium">"Let your winners run, cut your losers short."</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-star text-yellow-300 mr-3 text-xl"></i>
+                                <span class="font-medium">"Patience is key. Wait for your setup."</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-star text-yellow-300 mr-3 text-xl"></i>
+                                <span class="font-medium">"Emotional trading leads to financial ruin. Stay disciplined."</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Solutions to Issues Section -->
+                <section id="issue-solutions" class="mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Common Trading Issues & Solutions</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Issue 1 -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
+                            <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-gray-100 flex items-center"><i class="fas fa-exclamation-triangle text-yellow-500 mr-3"></i>Overtrading / Revenge Trading</h3>
+                            <p class="text-gray-700 dark:text-gray-300 mb-2">
+                                <strong>Issue:</strong> Taking too many trades, especially after a loss, leading to further losses.
+                            </p>
+                            <p class="text-gray-700 dark:text-gray-300">
+                                <strong>Solution:</strong> Implement a strict daily trade limit. After hitting your loss limit, close the terminal. Review your journal to understand triggers.
+                            </p>
+                        </div>
+                        <!-- Issue 2 -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
+                            <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-gray-100 flex items-center"><i class="fas fa-chart-line-down text-red-500 mr-3"></i>Not Sticking to Stop Loss (SL)</h3>
+                            <p class="text-gray-700 dark:text-gray-300 mb-2">
+                                <strong>Issue:</strong> Moving your SL or not exiting when your trade hits your predefined risk level.
+                            </p>
+                            <p class="text-gray-700 dark:text-gray-300">
+                                <strong>Solution:</strong> Place physical SL orders. Trust your analysis; if SL is hit, the trade idea was wrong. Focus on capital preservation.
+                            </p>
+                        </div>
+                        <!-- Issue 3 -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
+                            <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-gray-100 flex items-center"><i class="fas fa-money-bill-wave text-green-500 mr-3"></i>Exiting Winners Too Early</h3>
+                            <p class="text-gray-700 dark:text-gray-300 mb-2">
+                                <strong>Issue:</strong> Booking profits prematurely, missing out on larger moves.
+                            </p>
+                            <p class="text-gray-700 dark:text-gray-300">
+                                <strong>Solution:</strong> Implement trailing stop losses. Let winners run. Review trades where you exited early to see missed profit potential.
+                            </p>
+                        </div>
+                        <!-- Issue 4 -->
+                        <div class="bg-white p-6 rounded-lg shadow-lg dark:bg-gray-800">
+                            <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-gray-100 flex items-center"><i class="fas fa-book-open text-blue-500 mr-3"></i>Lack of Post-Trade Analysis</h3>
+                            <p class="text-gray-700 dark:text-gray-300 mb-2">
+                                <strong>Issue:</strong> Not learning from past trades, repeating the same mistakes.
+                            </p>
+                            <p class="text-gray-700 dark:text-gray-300">
+                                <strong>Solution:</strong> Consistently use this journal! Document your setup, entry, exit, and most importantly, your learnings from every trade.
+                            </p>
+                        </div>
                     </div>
                 </section>
 
                 <!-- Watchlist Section -->
                 <section id="watchlist">
-                     <h2 class="text-2xl font-bold mb-4">Watchlist</h2>
-                     <div class="bg-white p-4 rounded-lg shadow">
-                        <form id="add-watchlist-form" class="flex items-center space-x-2 mb-4">
-                            <input type="text" id="watchlist-symbol" placeholder="Add Scrip (e.g., NIFTY, RELIANCE)" class="flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                     <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Watchlist</h2>
+                     <div class="bg-white p-4 rounded-lg shadow dark:bg-gray-800">
+                        <form id="add-watchlist-form" class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
+                            <input type="text" id="watchlist-symbol" placeholder="Add Scrip (e.g., NIFTY, RELIANCE)" class="flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required>
+                            <input type="text" id="watchlist-notes" placeholder="Notes (e.g., 'Track for breakout')" class="flex-grow p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
                             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300">Add</button>
                         </form>
                         <div id="watchlist-items" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-                         <div id="no-watchlist-message" class="text-center py-8 text-gray-500 hidden"><p>Your watchlist is empty. Add a scrip to start tracking.</p></div>
+                         <div id="no-watchlist-message" class="text-center py-8 text-gray-500 dark:text-gray-400 hidden"><p>Your watchlist is empty. Add a scrip to start tracking.</p></div>
                      </div>
                 </section>
             </div>
         </main>
 
         <!-- Footer -->
-        <footer class="bg-white mt-auto"><div class="container mx-auto px-6 py-4 text-center text-gray-500"><p>&copy; 2025 F&O TradeJournal. All Rights Reserved.</p></div></footer>
+        <footer class="bg-white mt-auto dark:bg-gray-900"><div class="container mx-auto px-6 py-4 text-center text-gray-500 dark:text-gray-400"><p>&copy; 2025 F&O TradeJournal. All Rights Reserved.</p></div></footer>
     </div>
 
     <!-- Add/Edit Trade Modal -->
     <div id="trade-modal-backdrop" class="modal-backdrop"></div>
-    <div id="trade-modal" class="modal bg-white rounded-lg shadow-xl w-11/12 md:w-2/3 lg:w-1/2 max-w-4xl">
+    <div id="trade-modal" class="modal bg-white rounded-lg shadow-xl w-11/12 md:w-2/3 lg:w-1/2 max-w-4xl dark:bg-gray-800">
         <form id="trade-form" class="p-6">
-            <h3 id="modal-title" class="text-xl font-bold mb-6">Log New Trade</h3>
+            <h3 id="modal-title" class="text-xl font-bold mb-6 text-gray-900 dark:text-gray-100">Log New Trade</h3>
             <input type="hidden" id="trade-id">
+
             <div class="form-section-grid mb-4">
-                <div><label for="scrip" class="block text-sm font-medium text-gray-700">Scrip/Symbol</label><input type="text" id="scrip" placeholder="e.g., NIFTY" class="mt-1 block w-full p-2 border rounded-md" required></div>
-                <div><label for="date" class="block text-sm font-medium text-gray-700">Date</label><input type="date" id="date" class="mt-1 block w-full p-2 border rounded-md" required></div>
-                <div><label for="instrument" class="block text-sm font-medium text-gray-700">Instrument</label><select id="instrument" class="mt-1 block w-full p-2 border rounded-md"><option value="futures">Futures</option><option value="options">Options</option></select></div>
+                <div><label for="scrip" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Scrip/Symbol</label><input type="text" id="scrip" placeholder="e.g., NIFTY" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
+                <div><label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label><input type="date" id="date" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
+                <div><label for="instrument" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Instrument</label><select id="instrument" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"><option value="futures">Futures</option><option value="options">Options</option></select></div>
             </div>
             <div id="options-fields" class="form-section-grid mb-4 hidden">
-                <div><label for="strikePrice" class="block text-sm font-medium text-gray-700">Strike Price</label><input type="number" id="strikePrice" step="any" placeholder="e.g., 22500" class="mt-1 block w-full p-2 border rounded-md"></div>
-                <div><label for="optionType" class="block text-sm font-medium text-gray-700">Option Type</label><select id="optionType" class="mt-1 block w-full p-2 border rounded-md"><option value="CE">CE (Call)</option><option value="PE">PE (Put)</option></select></div>
+                <div><label for="strikePrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Strike Price</label><input type="number" id="strikePrice" step="any" placeholder="e.g., 22500" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"></div>
+                <div><label for="optionType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Option Type</label><select id="optionType" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"><option value="CE">CE (Call)</option><option value="PE">PE (Put)</option></select></div>
             </div>
              <div class="form-section-grid mb-4">
-                <div><label for="type" class="block text-sm font-medium text-gray-700">Position</label><select id="type" class="mt-1 block w-full p-2 border rounded-md"><option value="buy">Long (Buy)</option><option value="sell">Short (Sell)</option></select></div>
-                <div><label for="lots" class="block text-sm font-medium text-gray-700">Lots</label><input type="number" id="lots" min="1" value="1" class="mt-1 block w-full p-2 border rounded-md" required></div>
-                <div><label for="lotSize" class="block text-sm font-medium text-gray-700">Lot Size</label><input type="number" id="lotSize" min="1" placeholder="e.g., 25 for BANKNIFTY" class="mt-1 block w-full p-2 border rounded-md" required></div>
+                <div><label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Position</label><select id="type" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"><option value="buy">Long (Buy)</option><option value="sell">Short (Sell)</option></select></div>
+                <div><label for="lots" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Lots</label><input type="number" id="lots" min="1" value="1" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
+                <div><label for="lotSize" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Lot Size</label><input type="number" id="lotSize" min="1" placeholder="e.g., 25 for BANKNIFTY" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
              </div>
             <div class="form-section-grid mb-4">
-                <div><label for="entryPrice" class="block text-sm font-medium text-gray-700">Avg. Entry Price</label><input type="number" id="entryPrice" step="any" placeholder="Premium" class="mt-1 block w-full p-2 border rounded-md" required></div>
-                <div><label for="exitPrice" class="block text-sm font-medium text-gray-700">Avg. Exit Price</label><input type="number" id="exitPrice" step="any" placeholder="Leave blank if open" class="mt-1 block w-full p-2 border rounded-md"></div>
-                <div><label for="brokerage" class="block text-sm font-medium text-gray-700">Brokerage & Charges (₹)</label><input type="number" id="brokerage" step="any" placeholder="e.g., 45.50" class="mt-1 block w-full p-2 border rounded-md" value="0"></div>
+                <div><label for="entryPrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Avg. Entry Price</label><input type="number" id="entryPrice" step="any" placeholder="Premium" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" required></div>
+                <div><label for="exitPrice" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Avg. Exit Price</label><input type="number" id="exitPrice" step="any" placeholder="Leave blank if open" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"></div>
+                <div><label for="brokerage" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Brokerage & Charges (₹)</label><input type="number" id="brokerage" step="any" placeholder="e.g., 45.50" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" value="0"></div>
             </div>
              <div class="mb-6">
-                <label for="strategy" class="block text-sm font-medium text-gray-700">Strategy / Setup</label>
-                <input type="text" id="strategy" placeholder="e.g., Breakout, Support Bounce" class="mt-1 block w-full p-2 border rounded-md">
-                <label for="notes" class="mt-4 block text-sm font-medium text-gray-700">Notes / Learnings</label>
-                <textarea id="notes" rows="3" class="mt-1 block w-full p-2 border rounded-md"></textarea>
+                <label for="strategy" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Strategy / Setup</label>
+                <input type="text" id="strategy" placeholder="e.g., Breakout, Support Bounce" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100">
+                <label for="notes" class="mt-4 block text-sm font-medium text-gray-700 dark:text-gray-300">Notes / Learnings</label>
+                <textarea id="notes" rows="3" class="mt-1 block w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"></textarea>
             </div>
-            <div class="flex justify-end space-x-3"><button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">Cancel</button><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Save Trade</button></div>
+
+            <div class="flex justify-end space-x-3"><button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-700">Cancel</button><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Save Trade</button></div>
         </form>
     </div>
 
     <!-- Custom Alert/Confirmation Modal -->
     <div id="custom-alert-modal-backdrop" class="modal-backdrop"></div>
-    <div id="custom-alert-modal" class="modal bg-white rounded-lg shadow-xl w-11/12 md:w-1/3 max-w-md p-6 text-center">
-        <h3 id="custom-alert-title" class="text-xl font-bold mb-4"></h3>
-        <p id="custom-alert-message" class="mb-6"></p>
+    <div id="custom-alert-modal" class="modal bg-white rounded-lg shadow-xl w-11/12 md:w-1/3 max-w-md p-6 text-center dark:bg-gray-800">
+        <h3 id="custom-alert-title" class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100"></h3>
+        <p id="custom-alert-message" class="mb-6 text-gray-700 dark:text-gray-300"></p>
         <div class="flex justify-center space-x-4">
-            <button id="custom-alert-cancel" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 hidden">Cancel</button>
+            <button id="custom-alert-cancel" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 hidden dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-gray-700">Cancel</button>
             <button id="custom-alert-ok" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">OK</button>
         </div>
     </div>
@@ -211,32 +577,39 @@
         import { getFirestore, doc, collection, addDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, setDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables for Firebase configuration, app ID, and authentication token
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config)
-            : {
-                apiKey: "AIzaSyAqY_XWGzPEdqKqjyTHE0KJyYhzg0yMdTQ",
-                authDomain: "mzrtrade-journal.firebaseapp.com",
-                projectId: "mzrtrade-journal",
-                storageBucket: "mzrtrade-journal.firebasestorage.app",
-                messagingSenderId: "297165567168",
-                appId: "1:297165567168:web:f8ee32f9ee27d672a5a925",
-            };
+        const firebaseConfig = {
+            apiKey: "AIzaSyAqY_XWGzPEdqKqjyTHE0KJyYhzg0yMdTQ",
+            authDomain: "mzrtrade-journal.firebaseapp.com",
+            projectId: "mzrtrade-journal",
+            storageBucket: "mzrtrade-journal.firebasestorage.app",
+            messagingSenderId: "297165567168",
+            appId: "1:297165567168:web:f8ee32f9ee27d672a5a925"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'fno-journal-default';
+        const appId = firebaseConfig.projectId; // Using projectId as appId for consistency with previous logic
 
         let currentUserId = null;
         let tradesUnsubscribe = null;
         let watchlistUnsubscribe = null;
-        let allTradesData = []; // Store all trades for export
+        let goalsUnsubscribe = null; // New unsubscribe for goals
+        let allTradesData = []; // Store all trades for export and dashboard features
+        let userGoals = { targetNetPL: 0, targetWinRate: 0 }; // Store user-defined goals
+        let currentSortColumn = 'date'; // Default sort column
+        let currentSortDirection = 'desc'; // Default sort direction
+
+        // Chart instances
+        let plTimeChartInstance = null; // Only P/L over time chart
 
         // DOM Elements
+        const htmlElement = document.documentElement;
+        const themeToggle = document.getElementById('theme-toggle');
         const authSection = document.getElementById('auth-section');
         const appContent = document.getElementById('app-content');
         const authContainer = document.getElementById('auth-container');
-        const navLinks = document.getElementById('nav-links');
+        const desktopNavLinks = document.getElementById('desktop-nav-links');
         const loginForm = document.getElementById('login-form');
         const loginError = document.getElementById('login-error');
         
@@ -262,6 +635,16 @@
         const exportPdfBtn = document.getElementById('export-pdf-btn');
         const exportExcelBtn = document.getElementById('export-excel-btn');
 
+        // Chart Canvases
+        const plTimeChartCanvas = document.getElementById('pl-time-chart');
+
+        // Filter Elements
+        const filterScripInput = document.getElementById('filter-scrip');
+        const filterInstrumentSelect = document.getElementById('filter-instrument');
+        const filterTypeSelect = document.getElementById('filter-type');
+        const applyFiltersBtn = document.getElementById('apply-filters-btn');
+        const clearFiltersBtn = document.getElementById('clear-filters-btn');
+
         // Custom Alert/Confirmation Modal Elements
         const customAlertModal = document.getElementById('custom-alert-modal');
         const customAlertModalBackdrop = document.getElementById('custom-alert-modal-backdrop');
@@ -269,6 +652,46 @@
         const customAlertMessage = document.getElementById('custom-alert-message');
         const customAlertOkBtn = document.getElementById('custom-alert-ok');
         const customAlertCancelBtn = document.getElementById('custom-alert-cancel');
+
+        // Mobile Menu Elements
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuCloseButton = document.getElementById('mobile-menu-close-button');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+        const mobileAuthContainer = document.getElementById('mobile-auth-container');
+
+        // Goals Elements
+        const goalsForm = document.getElementById('goals-form');
+        const targetNetPLInput = document.getElementById('targetNetPL');
+        const targetWinRateInput = document.getElementById('targetWinRate');
+        const netPLProgressBar = document.getElementById('netPL-progress-bar');
+        const winRateProgressBar = document.getElementById('winRate-progress-bar');
+        const currentNetPLEl = document.getElementById('current-netPL');
+        const displayTargetNetPLEl = document.getElementById('display-target-netPL');
+        const currentWinRateEl = document.getElementById('current-winRate');
+        const displayTargetWinRateEl = document.getElementById('display-target-winRate');
+
+
+        // --- Theme Toggle Logic ---
+        // Check local storage for theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            htmlElement.classList.add('dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+            // Redraw P/L chart to update colors
+            if (allTradesData.length > 0) {
+                drawPLTimeChart(allTradesData);
+            }
+        });
 
         // Function to show custom alert/confirmation
         function showCustomAlert(title, message, isConfirm = false) {
@@ -304,6 +727,35 @@
             customAlertCancelBtn.onclick = null;
             customAlertModalBackdrop.onclick = null;
         }
+
+        // --- Mobile Menu Logic ---
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            // Clone auth container content to mobile menu
+            mobileAuthContainer.innerHTML = authContainer.innerHTML;
+            const mobileLogoutBtn = mobileAuthContainer.querySelector('#logout-btn');
+            if (mobileLogoutBtn) {
+                mobileLogoutBtn.addEventListener('click', logOut);
+            }
+        });
+
+        mobileMenuCloseButton.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+        });
+
+        mobileMenuOverlay.addEventListener('click', () => {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+        });
+
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuOverlay.classList.remove('active');
+            });
+        });
 
         // --- Authentication Logic ---
         onAuthStateChanged(auth, async (user) => {
@@ -342,7 +794,7 @@
         function updateUIForUser() {
             authSection.style.display = 'none';
             appContent.classList.remove('hidden');
-            navLinks.classList.remove('hidden');
+            desktopNavLinks.classList.remove('hidden'); // Ensure desktop nav is visible
             authContainer.innerHTML = `<button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition">Logout</button>`;
             document.getElementById('logout-btn').addEventListener('click', logOut);
         }
@@ -350,11 +802,13 @@
         function updateUIForGuest() {
             authSection.style.display = 'block';
             appContent.classList.add('hidden');
-            navLinks.classList.add('hidden');
+            desktopNavLinks.classList.add('hidden'); // Hide desktop nav
             authContainer.innerHTML = '';
             tradesTableBody.innerHTML = '';
             watchlistItems.innerHTML = '';
             updateDashboardStats([]);
+            updateGoalProgress({ targetNetPL: 0, targetWinRate: 0 }); // Clear goals display
+            if (plTimeChartInstance) plTimeChartInstance.destroy(); // Destroy chart
         }
 
         async function setupListeners(userId) {
@@ -362,9 +816,11 @@
             const tradesRef = collection(db, "artifacts", appId, "users", userId, "trades");
             tradesUnsubscribe = onSnapshot(tradesRef, (snapshot) => {
                 const trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                allTradesData = trades; // Store trades for export
-                renderTrades(trades);
+                allTradesData = trades; // Store trades for export and dashboard features
+                renderTrades(trades); // Render with current filters and sort
                 updateDashboardStats(trades);
+                drawPLTimeChart(trades); // Draw the P/L chart
+                updateGoalProgress(userGoals); // Update goals progress
             }, error => console.error("Error fetching trades:", error));
 
             const watchlistRef = collection(db, "artifacts", appId, "users", userId, "watchlist");
@@ -372,17 +828,32 @@
                 const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderWatchlist(items);
             }, error => console.error("Error fetching watchlist:", error));
+
+            const goalsDocRef = doc(db, "artifacts", appId, "users", userId, "settings", "goals");
+            goalsUnsubscribe = onSnapshot(goalsDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    userGoals = docSnap.data();
+                    targetNetPLInput.value = userGoals.targetNetPL || '';
+                    targetWinRateInput.value = userGoals.targetWinRate || '';
+                } else {
+                    userGoals = { targetNetPL: 0, targetWinRate: 0 }; // Reset if no goals exist
+                    targetNetPLInput.value = '';
+                    targetWinRateInput.value = '';
+                }
+                updateGoalProgress(userGoals); // Update goals display and progress bars
+            }, error => console.error("Error fetching goals:", error));
         }
 
         function cleanupListeners() {
             if (tradesUnsubscribe) tradesUnsubscribe();
             if (watchlistUnsubscribe) watchlistUnsubscribe();
+            if (goalsUnsubscribe) goalsUnsubscribe();
         }
         
         // --- Trade Logging and Display ---
         function getScripDisplayName(trade) {
             let name = trade.scrip.toUpperCase();
-            if (trade.instrument === 'options') {
+            if (trade.instrument === 'options' && trade.strikePrice && trade.optionType) {
                 name += ` ${trade.strikePrice} ${trade.optionType}`;
             }
             return name;
@@ -390,16 +861,47 @@
 
         function renderTrades(trades) {
             tradesTableBody.innerHTML = '';
-            noTradesMessage.classList.toggle('hidden', trades.length > 0);
-            if (trades.length > 0) {
-                trades.sort((a, b) => new Date(b.date) - new Date(a.date));
-                trades.forEach(trade => {
+            
+            // Apply filters
+            let filteredTrades = trades.filter(trade => {
+                const scripMatch = filterScripInput.value ? trade.scrip.toLowerCase().includes(filterScripInput.value.toLowerCase()) : true;
+                const instrumentMatch = filterInstrumentSelect.value ? trade.instrument === filterInstrumentSelect.value : true;
+                const typeMatch = filterTypeSelect.value ? trade.type === filterTypeSelect.value : true;
+                return scripMatch && instrumentMatch && typeMatch;
+            });
+
+            // Add netPLValue for sorting purposes
+            filteredTrades = filteredTrades.map(trade => ({
+                ...trade,
+                netPLValue: calculatePL(trade).netPL.value
+            }));
+
+            // Apply sorting
+            filteredTrades.sort((a, b) => {
+                let valA = a[currentSortColumn];
+                let valB = b[currentSortColumn];
+
+                // Handle string comparisons for non-numeric columns
+                if (typeof valA === 'string' && typeof valB === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+
+                if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            noTradesMessage.classList.toggle('hidden', filteredTrades.length > 0);
+
+            if (filteredTrades.length > 0) {
+                filteredTrades.forEach(trade => {
                     const { netPL } = calculatePL(trade);
-                    const plColor = netPL.value >= 0 ? 'text-green-600' : 'text-red-600';
-                    const typeClass = trade.type === 'buy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                    const plColor = netPL.value > 0 ? 'text-green-600' : (netPL.value < 0 ? 'text-red-600' : 'text-yellow-500'); // Added yellow for 0 P/L
+                    const typeClass = trade.type === 'buy' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
                     const row = `
-                        <tr class="bg-white border-b hover:bg-gray-50">
-                            <td class="px-6 py-4 font-medium text-gray-900">${getScripDisplayName(trade)}</td>
+                        <tr class="trade-table-row bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700">
+                            <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">${getScripDisplayName(trade)}</td>
                             <td class="px-6 py-4">${trade.date}</td>
                             <td class="px-6 py-4">${trade.strategy || 'N/A'}</td>
                             <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium rounded-full ${typeClass}">${trade.type.toUpperCase()}</span></td>
@@ -414,6 +916,21 @@
                 });
             }
         }
+
+        // Event listener for table header sorting
+        document.querySelectorAll('#trades thead th[data-sort]').forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.dataset.sort;
+                if (currentSortColumn === column) {
+                    currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSortColumn = column;
+                    currentSortDirection = 'asc'; // Default to ascending for new column
+                }
+                renderTrades(allTradesData); // Re-render with new sort
+            });
+        });
+
 
         tradeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -467,6 +984,7 @@
             tradeForm.reset();
             document.getElementById('trade-id').value = id || '';
             modalTitle.textContent = id ? 'Edit Trade' : 'Log New Trade';
+            
             if (id) {
                 document.getElementById('scrip').value = trade.scrip; document.getElementById('date').value = trade.date;
                 document.getElementById('instrument').value = trade.instrument; document.getElementById('strikePrice').value = trade.strikePrice || '';
@@ -492,13 +1010,25 @@
         cancelBtn.addEventListener('click', closeTradeModal);
         tradeModalBackdrop.addEventListener('click', closeTradeModal);
 
+        // --- Trade Filtering Logic ---
+        applyFiltersBtn.addEventListener('click', () => {
+            renderTrades(allTradesData); // Re-render trades with current filter values
+        });
+
+        clearFiltersBtn.addEventListener('click', () => {
+            filterScripInput.value = '';
+            filterInstrumentSelect.value = '';
+            filterTypeSelect.value = '';
+            renderTrades(allTradesData); // Re-render all trades
+        });
+
         // --- Watchlist Logic ---
         function renderWatchlist(items) {
             watchlistItems.innerHTML = '';
             noWatchlistMessage.classList.toggle('hidden', items.length > 0);
             if (items.length > 0) {
                 items.forEach(item => {
-                    watchlistItems.innerHTML += `<div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm"><span class="font-bold text-gray-800">${item.symbol.toUpperCase()}</span><button class="delete-watchlist-btn text-gray-400 hover:text-red-500" data-id="${item.id}">&times;</button></div>`;
+                    watchlistItems.innerHTML += `<div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm dark:bg-gray-700 dark:text-gray-100"><span class="font-bold text-gray-800 dark:text-gray-200">${item.symbol.toUpperCase()}</span><span class="text-sm text-gray-600 dark:text-gray-300">${item.notes || ''}</span><button class="delete-watchlist-btn text-gray-400 hover:text-red-500" data-id="${item.id}">&times;</button></div>`;
                 });
             }
         }
@@ -507,11 +1037,15 @@
             e.preventDefault();
             if (!currentUserId) return;
             const symbolInput = document.getElementById('watchlist-symbol');
+            const notesInput = document.getElementById('watchlist-notes'); // New notes input
             const symbol = symbolInput.value.trim().toUpperCase();
+            const notes = notesInput.value.trim();
+
             if (symbol) {
                 try {
-                    await setDoc(doc(db, "artifacts", appId, "users", currentUserId, "watchlist", symbol), { symbol: symbol });
+                    await setDoc(doc(db, "artifacts", appId, "users", currentUserId, "watchlist", symbol), { symbol: symbol, notes: notes });
                     symbolInput.value = '';
+                    notesInput.value = '';
                 } catch (error) { console.error("Error adding to watchlist:", error); }
             }
         });
@@ -561,7 +1095,153 @@
             };
             setPLEl(grossPlEl, totalGrossPL);
             setPLEl(netPlEl, totalNetPL);
+
+            // Update goals progress whenever dashboard stats are updated
+            updateGoalProgress(userGoals);
         }
+
+        // --- Chart Drawing Functions (using Chart.js) ---
+        function drawPLTimeChart(trades) {
+            const closedTrades = trades.filter(t => t.exitPrice !== null && t.exitPrice !== undefined);
+            const isDarkMode = htmlElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#e2e8f0' : '#374151'; // gray-200 or gray-800
+            const gridColor = isDarkMode ? 'rgba(113, 128, 147, 0.2)' : 'rgba(209, 213, 219, 0.5)'; // gray-500 with opacity or gray-300 with opacity
+
+            // Destroy existing chart instance before redrawing
+            if (plTimeChartInstance) plTimeChartInstance.destroy();
+
+            // P/L Over Time (Monthly/Yearly)
+            const monthlyPL = closedTrades.reduce((acc, trade) => {
+                const date = new Date(trade.date);
+                const yearMonth = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                const netPL = calculatePL(trade).netPL.value;
+                acc[yearMonth] = (acc[yearMonth] || 0) + netPL;
+                return acc;
+            }, {});
+
+            const sortedMonths = Object.keys(monthlyPL).sort();
+            const plData = sortedMonths.map(month => monthlyPL[month]);
+
+            plTimeChartInstance = new Chart(plTimeChartCanvas, {
+                type: 'line',
+                data: {
+                    labels: sortedMonths,
+                    datasets: [{
+                        label: 'Net P/L',
+                        data: plData,
+                        borderColor: 'rgb(99, 179, 237)', // blue-300
+                        backgroundColor: 'rgba(99, 179, 237, 0.2)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: textColor
+                            },
+                            grid: {
+                                color: gridColor
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: textColor
+                            },
+                            grid: {
+                                color: gridColor
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Trading Goals Logic ---
+        goalsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUserId) return;
+
+            const newTargetNetPL = parseFloat(targetNetPLInput.value) || 0;
+            const newTargetWinRate = parseFloat(targetWinRateInput.value) || 0;
+
+            const goalsToSave = {
+                targetNetPL: newTargetNetPL,
+                targetWinRate: newTargetWinRate
+            };
+
+            try {
+                const goalsDocRef = doc(db, "artifacts", appId, "users", currentUserId, "settings", "goals");
+                await setDoc(goalsDocRef, goalsToSave);
+                userGoals = goalsToSave; // Update local state
+                updateGoalProgress(userGoals); // Update display
+                showCustomAlert('Goals Saved', 'Your trading goals have been updated successfully!', false);
+            } catch (error) {
+                console.error("Error saving goals:", error);
+                showCustomAlert('Error', 'Failed to save goals. Please try again.', false);
+            }
+        });
+
+        function updateGoalProgress(goals) {
+            const currentNetPLValue = parseFloat(netPlEl.textContent.replace('₹', '')) || 0;
+            const currentWinRateValue = parseFloat(winRateEl.textContent.replace('%', '')) || 0;
+
+            const targetNetPL = goals.targetNetPL || 0;
+            const targetWinRate = goals.targetWinRate || 0;
+
+            // Update display values
+            currentNetPLEl.textContent = `₹${currentNetPLValue.toFixed(2)}`;
+            displayTargetNetPLEl.textContent = `₹${targetNetPL.toFixed(2)}`;
+            currentWinRateEl.textContent = `${currentWinRateValue.toFixed(1)}%`;
+            displayTargetWinRateEl.textContent = `${targetWinRate.toFixed(1)}%`;
+
+            // Calculate Net P/L progress
+            let netPLPercentage = 0;
+            if (targetNetPL > 0) {
+                netPLPercentage = (currentNetPLValue / targetNetPL) * 100;
+            } else if (currentNetPLValue > 0) {
+                netPLPercentage = 100; // If no target, but positive P/L, consider 100%
+            }
+            netPLPercentage = Math.max(0, Math.min(100, netPLPercentage)); // Cap between 0 and 100
+
+            netPLProgressBar.style.width = `${netPLPercentage}%`;
+            netPLProgressBar.textContent = `${netPLPercentage.toFixed(1)}%`;
+            netPLProgressBar.classList.remove('red', 'yellow');
+            if (netPLPercentage < 50) {
+                netPLProgressBar.classList.add('red');
+            } else if (netPLPercentage < 100) {
+                netPLProgressBar.classList.add('yellow');
+            }
+
+            // Calculate Win Rate progress
+            let winRatePercentage = 0;
+            if (targetWinRate > 0) {
+                winRatePercentage = (currentWinRateValue / targetWinRate) * 100;
+            } else if (currentWinRateValue > 0) {
+                winRatePercentage = 100; // If no target, but positive win rate, consider 100%
+            }
+            winRatePercentage = Math.max(0, Math.min(100, winRatePercentage)); // Cap between 0 and 100
+
+            winRateProgressBar.style.width = `${winRatePercentage}%`;
+            winRateProgressBar.textContent = `${winRatePercentage.toFixed(1)}%`;
+            winRateProgressBar.classList.remove('red', 'yellow');
+            if (winRatePercentage < 50) {
+                winRateProgressBar.classList.add('red');
+            } else if (winRatePercentage < 100) {
+                winRateProgressBar.classList.add('yellow');
+            }
+        }
+
 
         // --- Export Functionality ---
 
@@ -673,5 +1353,7 @@
         });
         
     </script>
+    <!-- Include jspdf-autotable for PDF table generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>
